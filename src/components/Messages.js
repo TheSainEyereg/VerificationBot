@@ -5,7 +5,8 @@ const colors = {
 	url: "#1194f0",
 	success: "#44e838",
 	warning: "#e5e838",
-	critical: "#e83838"
+	critical: "#e83838",
+	question: "#1a5fc7"
 }
 /**
  * Regular message
@@ -99,7 +100,7 @@ function critical(source, title, description, opt) {
  * @returns Promise<Message> | Embed
  */
 function question(source, title, description, opt) {
-	return regular(source, opt?.circle ? ":blue_circle: "+title : ":question: "+title, description, Object.assign({color: colors.critical}, opt));
+	return regular(source, opt?.circle ? ":blue_circle: "+title : ":question: "+title, description, Object.assign({color: colors.question}, opt));
 }
 
 export {regular, url, success, warning, critical, question, colors};
