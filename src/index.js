@@ -184,7 +184,6 @@ client.on("messageCreate", async message => {
 	}
 })
 
-
 client.on("interactionCreate", async interaction => {
 	if (interaction.isButton()) {
 		if (!interaction.member.roles.cache.has(roles.moderator)) return interaction.reply({
@@ -203,31 +202,30 @@ client.on("interactionCreate", async interaction => {
 					critical(null, "Вердикт уже вынесен", "Данный человек уже был верифифцирован!", {embed: true})
 				]
 			})
-			
-			const DMChannel = await (async () => {
-				try {
-					const channel = await member.user.createDM();
-					return channel;
-				} catch (e) {return false}
-			})();
 
 			if (interaction.customId.startsWith("reject")) {
-				if (DMChannel) await critical(DMChannel, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
+				try {
+					const DMChannel = await member.user.createDM();
+					if (DMChannel) await critical(DMChannel, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
+				} catch (e) {}
 	
 				await member.ban({reason: `Заблокирован ${interaction.user.tag} через систему подачи зявок!`});
 			}
 			if (interaction.customId.startsWith("approve")) {
-				if (DMChannel) await success(DMChannel, "Ваша заявка принята, добро пожаловать!");
+				try {
+					const DMChannel = await member.user.createDM();
+					if (DMChannel) await success(DMChannel, "Ваша заявка принята, добро пожаловать!");
+				} catch (e) {}
 	
 				await member.roles.add(roles.approved);
 			}
 			endConversation(interaction.guild, member.user);
 		} catch (e) {
-			console.error(e);
+			//console.error(e);
 			interaction.reply({
 				ephemeral: true,
 				embeds: [
-					critical(null, "Ошибка взаимодействия!", `Код: \`${e.message}\``, {embed: true})
+					critical(null, "Ошибка взаимодействия!", `Сообщение: \`${e.message}\``, {embed: true})
 				]
 			})
 		}
