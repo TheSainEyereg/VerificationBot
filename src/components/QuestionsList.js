@@ -102,7 +102,7 @@ const questions = [
 		}
 	},
 	{
-		message: "У вас установлен мод на голосовой чат? (PlasmoVoice 1.18.2)",
+		message: "У вас установлен мод на голосовой чат? (PlasmoVoice)",
 		async answer(message) {
 			if (findInArray(message.content, noAnswer)) {
 				await warning(message, "Обязательно скачай мод!", "Fabric: https://www.curseforge.com/minecraft/mc-mods/plasmo-voice/files/3903845 \nForge: https://www.curseforge.com/minecraft/mc-mods/plasmo-voice/files/3903846 ");
@@ -117,7 +117,7 @@ const questions = [
 		}
 	},
 	{
-		message: "У вас установлен мод на эмоции? (EmoteCraft 1.18.2)",
+		message: "У вас установлен мод на эмоции? (EmoteCraft)",
 		async answer(message) {
 			if (findInArray(message.content, noAnswer)) {
 				await warning(message, "Обязательно скачай мод!", "Fabric: https://www.curseforge.com/minecraft/mc-mods/emotecraft/files/3931121 \nForge: https://www.curseforge.com/minecraft/mc-mods/emotecraft-forge/files/3931122 ");
@@ -215,8 +215,8 @@ const questions = [
 	{
 		message: "Будете ли вы принимать участие в жизни сервера?",
 		async answer(message) {
-			if (message.content.split(/ +/).length > 5) {
-				await warning(message, "Максимум 5 слов !");
+			if (message.content.length > 200) {
+				await warning(message, "Максимум 200 символов!");
 				return false;
 			}
 			return true;
