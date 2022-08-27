@@ -1,7 +1,7 @@
 import { rules, channels } from "../../config.js";
 import { getRulesMessages, getRulesMessage } from "./DataManager.js";
 
-async function isUserReactedAll(user, promise) {
+async function isUserReactedAll(user, fetch) {
 	if (user.id === user.client.user.id) return false;
 
 	const channel = user.client.channels.cache.get(channels.rules);
@@ -11,7 +11,7 @@ async function isUserReactedAll(user, promise) {
 		const message = channel.messages.cache.get(id);
 		const reaction = message.reactions.cache.get("✅");
 
-		const users = !promise ? reaction.users.cache : await reaction.users.fetch();
+		const users = !fetch ? reaction.users.cache : await reaction.users.fetch();
 		
 		if (!users.find(u => u.id === user.id)) return false;
 	}
@@ -19,7 +19,7 @@ async function isUserReactedAll(user, promise) {
 	return true;
 }
 
-async function isUserReactedOther(user, message, promise) {
+async function isUserReactedOther(user, message, fetch) {
 	if (user.id === user.client.user.id) return false;
 
 	const rulesMessages = getRulesMessages();
@@ -32,7 +32,7 @@ async function isUserReactedOther(user, message, promise) {
 		const message = channel.messages.cache.get(id);
 		const reaction = message.reactions.cache.get("✅");
 
-		const users = !promise ? reaction.users.cache : await reaction.users.fetch();
+		const users = !fetch ? reaction.users.cache : await reaction.users.fetch();
 		
 		if (!users.find(u => u.id === user.id)) return false;
 	}

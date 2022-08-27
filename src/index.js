@@ -107,8 +107,10 @@ client.once("ready", async (client) => {
 	const firstRuleMessageReactionManager = await firstRuleMessage.reactions.resolve("✅");
 	const firstRuleMessageReactionManagerUsers = await firstRuleMessageReactionManager.users.fetch();
 
+	let shouldFetch = true;
 	for (const user of firstRuleMessageReactionManagerUsers.values()) {
-		const isReactedAll = await isUserReactedOther(user, firstRuleMessage, true);
+		const isReactedAll = await isUserReactedOther(user, firstRuleMessage, shouldFetch);
+		shouldFetch && (shouldFetch = false)
 
 		if (isReactedAll) startConversation(firstRuleMessage.guild, user);
 		else endConversation(firstRuleMessage.guild, user);
