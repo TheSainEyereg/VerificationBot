@@ -109,6 +109,8 @@ client.once("ready", async (client) => {
 
 	let shouldFetch = true;
 	for (const user of firstRuleMessageReactionManagerUsers.values()) {
+		if (user.id === client.user.id) continue;
+
 		const isReactedAll = await isUserReactedOther(user, firstRuleMessage, shouldFetch);
 		shouldFetch && (shouldFetch = false)
 
