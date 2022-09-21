@@ -54,11 +54,12 @@ const questions = [
 	{
 		message: "Сколько вам лет?",
 		async answer(message) {
-			if (isNaN(message.content)) {
-				await warning(message, "Неверный формат!", "Вы должны ввести число!");
+			const number = message.content.match(/[0-9]/g)?.[0];
+			if (isNaN(number)) {
+				await warning(message, "Вы должны написать хоть одно число в вашем сообщении!")
 				return false;
 			}
-			if (message.content < settings.minAge) {
+			if (parent(number) < settings.minAge) {
 				try {
 					const DMChannel = await message.author.createDM();
 					if (DMChannel) await critical(DMChannel, "Вы ешё слишком молоды, чтобы играть на сервере!", "Напишите Olejka#4300 для оспаривания блокировки.");	
