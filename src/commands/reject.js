@@ -18,7 +18,7 @@ export default {
 			embeds: [
 				warning(null, "Неправильное использование!", "Команда должна запускаться исключительно в канале для верификации пользователя!", {embed: true})
 			]
-		})
+		});
 
 		interaction.reply({
 			ephemeral: true,
@@ -37,6 +37,6 @@ export default {
 					]
 				}),
 			]
-		})
+		});
 	}
-}
+};

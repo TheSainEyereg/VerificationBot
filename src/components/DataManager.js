@@ -19,11 +19,11 @@ function saveData() {
 
 function getRulesMessages() {
 	return data.rulesMessages;
-};
+}
 
 function getRulesMessage(type) {
 	return getRulesMessages()[type];
-};
+}
 
 function setRulesMessage(type, message) {
 	data.rulesMessages[type] = message.id;
@@ -35,11 +35,11 @@ function getAllVerify() {
 
 function getVerify(id) {
 	return data.onVerify[id];
-};
+}
 
 function setVerify(id, object) {
 	data.onVerify[id] = object;
-};
+}
 
 function deleteVerify(id) {
 	delete data.onVerify[id];
@@ -48,11 +48,11 @@ function deleteVerify(id) {
 
 function getCategory() {
 	return data.category;
-};
+}
 
 function setCategory(id) {
 	data.category = id;
-};
+}
 
 
 function saveAnswer(id, answer) {

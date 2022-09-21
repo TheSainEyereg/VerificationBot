@@ -1,7 +1,7 @@
 import { Interaction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { getAllVerify } from "../components/DataManager.js";
-import { question } from "../components/Messages.js";
+import { question, warning } from "../components/Messages.js";
 
 export default {
 	data: new SlashCommandBuilder().setName("approve").setDescription("Подтверждает пользователя из этого канала."),
@@ -18,7 +18,7 @@ export default {
 			embeds: [
 				warning(null, "Неправильное использование!", "Команда должна запускаться исключительно в канале для верификации пользователя!", {embed: true})
 			]
-		})
+		});
 
 		interaction.reply({
 			ephemeral: true,
@@ -37,6 +37,6 @@ export default {
 					]
 				}),
 			]
-		})
+		});
 	}
-}
+};
