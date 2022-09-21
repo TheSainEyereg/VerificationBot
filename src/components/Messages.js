@@ -7,7 +7,7 @@ const colors = {
 	warning: "#e5e838",
 	critical: "#e83838",
 	question: "#1a5fc7"
-}
+};
 /**
  * Regular message
  * @param {Message|TextChannel} source - A message or text channel to send the message to
@@ -17,16 +17,18 @@ const colors = {
  * @param {Boolean} opt.embed - Should I return embed
  * @param {djs.ColorResolvable} opt.color - Color
  * @param {string} opt.image - image url
+ * @param {string} opt.content - message content
  * @returns Promise<Message> | Embed
  */
 function regular(source, title, description, opt) {
+	/** @type {TextChannel} */
 	const channel = source?.channel || source;
 	const embed = new MessageEmbed({color: opt?.color || colors.regular});
 	title && embed.setTitle(title);
 	description && embed.setDescription(description);
 	opt?.image && embed.setImage(opt.image);
 	if (opt?.embed) return embed;
-	return channel.send({embeds: [embed]});
+	return channel.send(Object.assign({embeds: [embed]}, opt?.content ? {content: opt.content}:{}));
 }
 /**
  * Message with a link
@@ -36,6 +38,7 @@ function regular(source, title, description, opt) {
  * @param {Object} [opt] - Optional parameters
  * @param {Boolean} opt.footer - Custom footer text
  * @param {Boolean} opt.embed - Should I return embed
+ * @param {string} opt.content - message content
  * @returns Promise<Message> | Embed
  */
 function url(source, url, text, opt) {
@@ -57,6 +60,7 @@ function url(source, url, text, opt) {
  * @param {Object} [opt] - Optional parameters 
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
+ * @param {string} opt.content - message content
  * @returns Promise<Message> | Embed
  */
 function success(source, title, description, opt) {
@@ -70,6 +74,7 @@ function success(source, title, description, opt) {
  * @param {Object} [opt] - Optional parameters 
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
+ * @param {string} opt.content - message content
  * @returns Promise<Message> | Embed
  */
 function warning(source, title, description, opt) {
@@ -83,6 +88,7 @@ function warning(source, title, description, opt) {
  * @param {Object} [opt] - Optional parameters 
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
+ * @param {string} opt.content - message content
  * @returns Promise<Message> | Embed
  */
 function critical(source, title, description, opt) {
@@ -97,6 +103,7 @@ function critical(source, title, description, opt) {
  * @param {Object} [opt] - Optional parameters 
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
+ * @param {string} opt.content - message content
  * @returns Promise<Message> | Embed
  */
 function question(source, title, description, opt) {

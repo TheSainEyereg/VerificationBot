@@ -1,6 +1,6 @@
 import { guild as guildId, channels, roles } from "../../config.js";
 import { deleteAnswer, deleteVerify, getAnswer, getCategory, getVerify, setCategory, setVerify } from "./DataManager.js";
-import { Message, Guild, Client, User, MessageEmbed, MessageActionRow, MessageButton } from "discord.js";
+import { Message, Guild, Client, User, MessageEmbed, MessageActionRow, MessageButton, TextChannel } from "discord.js";
 import questions from "./QuestionsList.js";
 import { colors, regular, success } from "./Messages.js";
 
@@ -33,10 +33,10 @@ async function checkForCategory(client) {
 
 	try {
 		const category = await guild.channels.fetch(categoryId);
-		console.log(`Verification category found!`);
+		console.log("Verification category found!");
 		return category;
 	} catch (e) {
-		console.log(`Verification category not found!`);
+		console.log("Verification category not found!");
 		await createCategory(guild);
 	}
 }
@@ -93,7 +93,7 @@ async function startConversation(guild, user) {
 		onSameQuestion: 0
 	});
 
-	regular(channel, "Привет, добро пожаловать в систему анкетирования!", `Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем! \n**${questions[0].message}**`, {imgae: questions[0].image});
+	regular(channel, "Привет, добро пожаловать в систему анкетирования!", `Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем! \n\n**${questions[0].message}**`, {imgae: questions[0].image, content: user.toString()});
 
 	return true;
 }
@@ -113,6 +113,16 @@ async function endConversation(guild, user) {
 	deleteAnswer(user.id);
 	deleteVerify(user.id);
 
+	if (!userVeryfy.alertMessage) return true; // Ну чел тип даже не дошел до верефикации.
+
+	/** @type {TextChannel} */
+	const answerChannel = await guild.channels.fetch(channels.answers);
+
+	try {
+		const alertMessage = await answerChannel.messages.fetch(userVeryfy.alertMessage);
+		await alertMessage.delete();
+	} catch (e) {}
+
 	return true;
 }
 
@@ -122,12 +132,16 @@ async function endConversation(guild, user) {
 async function sendForConfirmation(message) {
 	const userVeryfy = getVerify(message.author.id);
 
-	const answerChannel = await message.guild.channels.fetch(channels.answers);
+	/** @type {TextChannel} */
 	const verifyChannel = await message.guild.channels.fetch(userVeryfy.channel);
 
+	await verifyChannel.edit({name: `🟢${userVeryfy.nickname}`})
 	await verifyChannel.permissionOverwrites.edit(roles.moderator, {VIEW_CHANNEL: true, SEND_MESSAGES: true});
 
-	await answerChannel.send({
+	/** @type {TextChannel} */
+	const answerChannel = await message.guild.channels.fetch(channels.answers);
+
+	const alertMessage = await answerChannel.send({
 		content: `<@&${roles.moderator}>`,
 		embeds: [
 			new MessageEmbed({
@@ -184,6 +198,7 @@ async function sendForConfirmation(message) {
 	})
 
 	deleteAnswer(message.author.id);
+	userVeryfy.alertMessage = alertMessage.id;
 	userVeryfy.onConfirmation = true;
 
 	await success(message, "Поздравляю, вы прошли систему анкетирования!", "Теперь дождитесь ответа ответственного сотрудника для подтверждения!");
