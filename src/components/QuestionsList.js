@@ -59,7 +59,7 @@ const questions = [
 				await warning(message, "Вы должны написать хоть одно число в вашем сообщении!")
 				return false;
 			}
-			if (parseInt(number) < settings.minAge) {
+			if (parent(number) < settings.minAge) {
 				try {
 					const DMChannel = await message.author.createDM();
 					if (DMChannel) await critical(DMChannel, "Вы ешё слишком молоды, чтобы играть на сервере!", "Напишите Olejka#4300 для оспаривания блокировки.");	
