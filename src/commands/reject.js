@@ -1,7 +1,7 @@
 import { Interaction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { getAllVerify } from "../components/DataManager.js";
-import { question } from "../components/Messages.js";
+import { question, warning } from "../components/Messages.js";
 
 export default {
 	data: new SlashCommandBuilder().setName("reject").setDescription("Отклоняет заявку пользователя и блокирует его на сервере."),
