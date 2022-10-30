@@ -4,8 +4,8 @@ import { getVerify } from "./DataManager.js";
 import { regular, warning, critical, success } from "./Messages.js";
 import { endConversation } from "./QuestionsManager.js";
 
-const yesAnswer = ["да", "конечно", "ес", "есс", "естесственно", "кнчн", "а как же", "конечно же", "yes", "right", "true", "ну да", "дэм", "нуда"];
-const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "ноу"];
+const yesAnswer = ["да", "конечно", "ес", "есс", "естесственно", "кнчн", "а как же", "конечно же", "yes", "right", "true", "ну да", "дэм", "нуда", "+"];
+const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "ноу", "-"];
 
 /**
  * 
