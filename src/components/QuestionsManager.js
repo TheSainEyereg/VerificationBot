@@ -106,14 +106,14 @@ async function endConversation(guild, user) {
 	const userVeryfy = getVerify(user.id);
 
 	const chanelExists = await checkForChannel(guild, user);
-	if (!chanelExists) return false;
-
-	await guild.channels.delete(userVeryfy.channel);
+	if (chanelExists) {
+		await guild.channels.delete(userVeryfy.channel);
+	}
 
 	deleteAnswer(user.id);
 	deleteVerify(user.id);
 
-	if (!userVeryfy.alertMessage) return true; // Ну чел тип даже не дошел до верефикации.
+	if (!userVeryfy?.alertMessage) return true; // Ну чел тип даже не дошел до верефикации.
 
 	/** @type {TextChannel} */
 	const answerChannel = await guild.channels.fetch(channels.answers);
