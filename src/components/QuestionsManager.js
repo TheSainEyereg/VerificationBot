@@ -93,7 +93,9 @@ async function startConversation(guild, user) {
 		onSameQuestion: 0
 	});
 
-	regular(channel, "Привет, добро пожаловать в систему анкетирования!", `Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем! \n\n**${questions[0].message}**`, {imgae: questions[0].image, content: user.toString()});
+	//await regular(channel, "Привет, добро пожаловать в систему анкетирования!", `Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем! \n\n**${questions[0].message}**`, {imgae: questions[0].image, content: user.toString()});
+	await regular(channel, "Привет, добро пожаловать в систему анкетирования!", "Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем!",{content: user.toString()});
+	await regular(channel, "Первый вопрос", questions[0].message, {image: questions[0].image});
 
 	return true;
 }
