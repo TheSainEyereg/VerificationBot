@@ -73,7 +73,7 @@ function sendRuleMessage(channel, type) {
 	});
 }
 
-client.commands = new Collection();
+const commands = new Collection();
 
 client.once("ready", async (client) => {
 	console.log("Ready!");
@@ -111,7 +111,7 @@ client.once("ready", async (client) => {
 	for (const user of firstRuleMessageReactionManagerUsers.values()) {
 		if (user.id === client.user.id) continue;
 
-		const isReactedAll = await isUserReactedOther(user, firstRuleMessage, shouldFetch);
+		const isReactedAll = await isUserReactedOther(user, firstRuleMessage, {fetch: shouldFetch});
 		shouldFetch && (shouldFetch = false)
 
 		if (isReactedAll) startConversation(firstRuleMessage.guild, user);
@@ -123,13 +123,12 @@ client.once("ready", async (client) => {
 	process.stdout.write("Parsing commands...");
 	for (const file of fs.readdirSync(__dirname+"/commands").filter(f => f.endsWith(".js"))) {
 		const command = (await import("./commands/"+file)).default;
-		client.commands.set(command.data.name, command);
+		commands.set(command.data.name, command);
 	}
 	process.stdout.write("Registering slash commands...");
-	const commands = client.commands.map(cmd => cmd.data);
 	await rest.put(
 		Routes.applicationCommands(client.user.id),
-		{ body: commands},
+		{ body: commands.map(cmd => cmd.data)},
 	)
 	process.stdout.write("Done\n");
 
@@ -139,17 +138,15 @@ client.once("ready", async (client) => {
 
 
 client.on("messageReactionAdd", async (reaction, user) => {
-	const isReactedAll = await isUserReactedAll(user);
+	const isReactedAll = await isUserReactedOther(user, reaction.message);
 
 	if (isReactedAll) startConversation(reaction.message.guild, user);
-	else endConversation(reaction.message.guild, user);
 });
 
 client.on("messageReactionRemove", async (reaction, user) => {
-	const isReactedAll = await isUserReactedAll(user);
+	const isUncheckedAll = await isUserReactedOther(user, reaction.message, {unchecked: true});
 
-	if (isReactedAll) startConversation(reaction.message.guild, user);
-	else endConversation(reaction.message.guild, user);
+	if (isUncheckedAll) endConversation(reaction.message.guild, user);
 });
 
 
@@ -236,7 +233,7 @@ client.on("interactionCreate", async interaction => {
 	}
 
 	if (interaction.isCommand()) {
-		const command = client.commands.get(interaction.commandName);
+		const command = commands.get(interaction.commandName);
 		if (!command) return;
 		
 		if (!command.allowNonMods && !interaction.member.roles.cache.has(roles.moderator)) return interaction.reply({
