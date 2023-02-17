@@ -4,7 +4,7 @@
 		"start": "node ./src/index"
 	},
 	"dependencies": {
-		"@discordjs/builders": "^1.1.0",
+		"@discordjs/builders": "^1.4.0",
 		"@discordjs/rest": "^1.0.1",
 		"discord-api-types": "^0.37.2",
 		"discord.js": "13"
