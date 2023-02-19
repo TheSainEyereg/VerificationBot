@@ -1,12 +1,12 @@
-import djs, {MessageEmbed, Message, TextChannel} from "discord.js";
+const {ColorResolvable, EmbedBuilder, Message, TextChannel, Colors} = require("discord.js");
 
 const colors = {
-	regular: "#e8cb38",
-	url: "#1194f0",
-	success: "#44e838",
-	warning: "#e5e838",
-	critical: "#e83838",
-	question: "#1a5fc7"
+	regular: 0xc4e85f,
+	url: 0x1194f0,
+	success: 0x44e838,
+	warning: 0xe5e838,
+	critical: 0xe83838,
+	question: 0x1a5fc7
 };
 /**
  * Regular message
@@ -15,7 +15,7 @@ const colors = {
  * @param {String} description - Description
  * @param {Object} [opt] - Optional parameters 
  * @param {Boolean} opt.embed - Should I return embed
- * @param {djs.ColorResolvable} opt.color - Color
+ * @param {ColorResolvable} opt.color - Color
  * @param {string} opt.image - image url
  * @param {string} opt.content - message content
  * @returns Promise<Message> | Embed
@@ -23,7 +23,7 @@ const colors = {
 function regular(source, title, description, opt) {
 	/** @type {TextChannel} */
 	const channel = source?.channel || source;
-	const embed = new MessageEmbed({color: opt?.color || colors.regular});
+	const embed = new EmbedBuilder({color: opt?.color || colors.regular});
 	title && embed.setTitle(title);
 	description && embed.setDescription(description);
 	opt?.image && embed.setImage(opt.image);
@@ -43,7 +43,7 @@ function regular(source, title, description, opt) {
  */
 function url(source, url, text, opt) {
 	const channel = source.channel || source;
-	const embed = new MessageEmbed({
+	const embed = new EmbedBuilder({
 		color: colors.url,
 		title: text,
 		url
@@ -110,4 +110,4 @@ function question(source, title, description, opt) {
 	return regular(source, opt?.circle ? ":blue_circle: "+title : ":question: "+title, description, Object.assign({color: colors.question}, opt));
 }
 
-export {regular, url, success, warning, critical, question, colors};
+module.exports = {regular, url, success, warning, critical, question, colors};

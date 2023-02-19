@@ -1,19 +1,20 @@
-import { guild as guildId, channels, roles } from "../../config.js";
-import { deleteAnswer, deleteVerify, getAnswer, getCategory, getVerify, setCategory, setVerify } from "./DataManager.js";
-import { Message, Guild, Client, User, MessageEmbed, MessageActionRow, MessageButton, TextChannel } from "discord.js";
-import questions from "./QuestionsList.js";
-import { colors, regular, success } from "./Messages.js";
+const { Message, Guild, Client, User, EmbedBuilder, ActionRowBuilder, ButtonBuilder, TextChannel, ButtonStyle, ChannelType, PermissionFlagsBits } = require("discord.js");
+const { guildId, channels, roles } = require("../../config");
+const { deleteAnswer, deleteVerify, getAnswer, getCategory, getVerify, setCategory, setVerify } = require("./DataManager");
+const { textQuestions } = require("./QuestionsList");
+const { colors, regular, success } = require("./Messages");
 
 /**
  * @param {Guild} guild 
  */
 async function createCategory(guild) {
-	const category = await guild.channels.create("Verification", {
-		type: "GUILD_CATEGORY",
+	const category = await guild.channels.create({
+		name: "Verification",
+		type: ChannelType.GuildCategory,
 		permissionOverwrites: [
 			{
 				id: guild.id,
-				deny: ["VIEW_CHANNEL", "SEND_MESSAGES", "CONNECT"]
+				deny: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.Connect]
 			}
 		]
 	});
@@ -79,13 +80,14 @@ async function startConversation(guild, user) {
 
 	const categoryId = getCategory();
 
-	const channel = await guild.channels.create(user.username, {
-		type: "GUILD_TEXT",
+	const channel = await guild.channels.create({
+		name: user.username,
+		type: ChannelType.GuildText,
 		parent: categoryId
 	});
 
 	await channel.lockPermissions();
-	await channel.permissionOverwrites.edit(user, {VIEW_CHANNEL: true, SEND_MESSAGES: true});
+	await channel.permissionOverwrites.edit(user, {ViewChannel: true, SendMessages: true});
 
 	setVerify(user.id, {
 		channel: channel.id,
@@ -93,9 +95,9 @@ async function startConversation(guild, user) {
 		onSameQuestion: 0
 	});
 
-	//await regular(channel, "Привет, добро пожаловать в систему анкетирования!", `Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем! \n\n**${questions[0].message}**`, {imgae: questions[0].image, content: user.toString()});
+	//await regular(channel, "Привет, добро пожаловать в систему анкетирования!", `Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем! \n\n**${textQuestions[0].message}**`, {imgae: textQuestions[0].image, content: user.toString()});
 	await regular(channel, "Привет, добро пожаловать в систему анкетирования!", "Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем!",{content: user.toString()});
-	await regular(channel, "Первый вопрос", questions[0].message, {image: questions[0].image});
+	await regular(channel, "Первый вопрос", textQuestions[0].message, {image: textQuestions[0].image});
 
 	return true;
 }
@@ -138,7 +140,7 @@ async function sendForConfirmation(message) {
 	const verifyChannel = await message.guild.channels.fetch(userVeryfy.channel);
 
 	await verifyChannel.edit({name: `🟢${userVeryfy.nickname}`})
-	await verifyChannel.permissionOverwrites.edit(roles.moderator, {VIEW_CHANNEL: true, SEND_MESSAGES: true});
+	await verifyChannel.permissionOverwrites.edit(roles.moderator, {ViewChannel: true, SendMessages: true});
 
 	/** @type {TextChannel} */
 	const answerChannel = await message.guild.channels.fetch(channels.answers);
@@ -146,7 +148,7 @@ async function sendForConfirmation(message) {
 	const alertMessage = await answerChannel.send({
 		content: `<@&${roles.moderator}>`,
 		embeds: [
-			new MessageEmbed({
+			new EmbedBuilder({
 				color: colors.regular,
 				title: "Новый игрок на подтверждение",
 				description: "Новый игрок запрашивает подтверждение, пройдите в канал для беседы с ним!",
@@ -186,12 +188,12 @@ async function sendForConfirmation(message) {
 			}
 		],
 		components: [
-			new MessageActionRow({
+			new ActionRowBuilder({
 				components: [
-					new MessageButton({
+					new ButtonBuilder({
 						customId: "reject"+message.author.id,
 						label: "Отклонить сразу",
-						style: "DANGER",
+						style: ButtonStyle.Danger,
 						emoji: "✖"
 					})
 				]
@@ -209,4 +211,4 @@ async function sendForConfirmation(message) {
 }
 
 
-export {checkForCategory, startConversation, sendForConfirmation, endConversation};
+module.exports = {checkForCategory, startConversation, sendForConfirmation, endConversation};

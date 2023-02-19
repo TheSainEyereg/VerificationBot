@@ -133,3 +133,4 @@ config*.js
 # bot data
 data*.json
 answers
+rules

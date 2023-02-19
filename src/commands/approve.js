@@ -1,9 +1,8 @@
-import { Interaction, MessageActionRow, MessageButton } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { getAllVerify } from "../components/DataManager.js";
-import { question, warning } from "../components/Messages.js";
+const { Interaction, ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require("discord.js");
+const { getAllVerify } = require("../components/DataManager.js");
+const { question, warning } = require("../components/Messages.js");
 
-export default {
+module.exports =  {
 	data: new SlashCommandBuilder().setName("approve").setDescription("Подтверждает пользователя из этого канала."),
 	/**
 	 * Interaction
@@ -26,12 +25,12 @@ export default {
 				question(null,"Подтвердить игрока?", "Нажимая кнопку \"Подтвердить\" вы разрешаете пользователю доступ к серверу!", {embed: true})
 			],
 			components: [
-				new MessageActionRow({
+				new ActionRowBuilder({
 					components: [
-						new MessageButton({
+						new ButtonBuilder({
 							customId: "approve"+userId,
 							label: "Подтвердить",
-							style: "SUCCESS",
+							style: ButtonStyle.Success,
 							emoji: "✔"
 						})
 					]

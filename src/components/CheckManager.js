@@ -1,5 +1,5 @@
-import { rules, channels } from "../../config.js";
-import { getRulesMessages, getRulesMessage } from "./DataManager.js";
+const { rules, channels } = require("../../config");
+const { getRulesMessages, getRulesMessage } = require("./DataManager");
 
 async function isUserReactedAll(user, options) {
 	if (user.id === user.client.user.id) return false;
@@ -43,4 +43,4 @@ async function isUserReactedOther(user, message, options) {
 	
 }
 
-export {isUserReactedAll, isUserReactedOther };
+module.exports = {isUserReactedAll, isUserReactedOther };

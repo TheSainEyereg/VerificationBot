@@ -1,9 +1,8 @@
-import { Interaction, MessageActionRow, MessageButton } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { getAllVerify } from "../components/DataManager.js";
-import { question, warning } from "../components/Messages.js";
+const { Interaction, ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require("discord.js");
+const { getAllVerify } = require("../components/DataManager.js");
+const { question, warning } = require("../components/Messages.js");
 
-export default {
+module.exports =  {
 	data: new SlashCommandBuilder().setName("reject").setDescription("Отклоняет заявку пользователя и блокирует его на сервере."),
 	/**
 	 * Interaction
@@ -26,12 +25,12 @@ export default {
 				question(null,"Отклонить игрока?", "Нажимая кнопку \"Отклонить\" вы отклоняете заявку и блокируете пользователю доступ к серверу!", {embed: true})
 			],
 			components: [
-				new MessageActionRow({
+				new ActionRowBuilder({
 					components: [
-						new MessageButton({
+						new ButtonBuilder({
 							customId: "reject"+userId,
 							label: "Отклонить",
-							style: "DANGER",
+							style: ButtonStyle.Danger,
 							emoji: "✖"
 						})
 					]

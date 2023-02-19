@@ -1,5 +1,12 @@
-import fs from "fs";
-import questions from "./QuestionsList.js";
+const fs = require("fs");
+
+
+/**
+ * @typedef {Object} data
+ * @property {string} message
+ * @property {string} image
+ * @property {answerCallback} answer
+ */
 
 const data = (() => {
 	try {
@@ -55,19 +62,15 @@ function setCategory(id) {
 }
 
 
-function saveAnswer(id, answer) {
+function addAnswer(id, question, answer) {
 	if (!fs.existsSync("./answers/")) fs.mkdirSync("./answers/");
-
-	const userVeryfy = getVerify(id);
-
-	const question = questions[userVeryfy.question];
 
 	fs.appendFileSync(`./answers/${id}.txt` , `Вопрос: ${question.message}\nОтвет: ${answer}\n\n`);
 }
 
 function getAnswer(id) {
 	if (!fs.existsSync(`./answers/${id}.txt`)) return false;
-	return fs.readFileSync(`./answers/${id}.txt`);
+	return fs.readFileSync(`./answers/${id}.txt`).toString();
 }
 
 function deleteAnswer(id) {
@@ -76,10 +79,10 @@ function deleteAnswer(id) {
 }
 
 
-export {
+module.exports = {
 	saveData,
 	getRulesMessages, getRulesMessage, setRulesMessage,
 	getAllVerify, getVerify, setVerify, deleteVerify,
 	getCategory, setCategory,
-	saveAnswer, getAnswer, deleteAnswer
+	addAnswer, getAnswer, deleteAnswer
 };

@@ -1,8 +1,7 @@
-import { Interaction, MessageEmbed } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { colors } from "../components/Messages.js";
+const { Interaction, EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const { colors } = require("../components/Messages.js");
 
-export default {
+module.exports =  {
 	data: new SlashCommandBuilder().setName("info").setDescription("Получает дату регистрации пользователя Discord.").addUserOption(option =>
 		option
 			.setName("target")
@@ -18,7 +17,7 @@ export default {
 
 		interaction.reply({
 			embeds: [
-				new MessageEmbed({
+				new EmbedBuilder({
 					color: colors.regular,
 					title: "Информация о пользователе "+member.displayName,
 					fields: [
