@@ -1,11 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 const { Routes, REST, Events, Collection } = require("discord.js");
-const { regular } = require("../components/Messages");
-const { getRulesMessages, getRulesMessage, setRulesMessage, saveData } = require("../components/DataManager");
-const { checkForCategory, endConversation, startConversation } = require("../components/QuestionsManager");
-const { isUserReactedOther } = require("../components/CheckManager");
-const { token, channels, rules } = require("../../config");
+const { regular } = require("../components/messages");
+const { getRulesMessages, getRulesMessage, setRulesMessage, saveData, getAllVerify, saveRulesMessages } = require("../components/dataManager");
+const { endConversation, startConversation } = require("../components/questionsManager");
+const { isUserReactedOther, isUserReactedAll } = require("../components/checkManager");
+const { token, channels, rules, guildId } = require("../config");
 
 
 function sendRuleMessage(channel, type) {
@@ -41,19 +41,13 @@ module.exports = {
 		console.log("Ready!");
 		client.user.setActivity("за игроками", {type: "WATCHING"});
 	
-		await checkForCategory(client);
-	
 		const channel = client.channels.cache.get(channels.rules);
 		
 		for (const type of Object.keys(rules)) {
-			const id = getRulesMessage(type);
-			if (!id) {
-				await sendRuleMessage(channel, type);
-				continue;
-			}
-	
-	
 			try {
+				const id = getRulesMessage(type);
+				if (!id) throw "";
+				
 				await channel.messages.fetch(id);
 				console.log(`Message "${type}" found!`);
 			} catch (e) {
@@ -62,7 +56,9 @@ module.exports = {
 			}
 		}
 	
+
 		process.stdout.write("Checking reactions for update...");
+
 		const firstRuleMessageId = Object.values(getRulesMessages())[0];
 		const firstRuleMessage = channel.messages.cache.find(m => m.id === firstRuleMessageId);
 	
@@ -77,9 +73,14 @@ module.exports = {
 			if (shouldFetch) shouldFetch = false;
 	
 			if (isReactedAll) startConversation(firstRuleMessage.guild, user);
-			//else endConversation(firstRuleMessage.guild, user);
-			// TODO
 		}
+
+		for (const onVerifyId of getAllVerify().map(v => v.userId)) {
+			const isUncheckedAll = await isUserReactedAll({id: onVerifyId, client}, {unchecked: true});
+			
+			if (isUncheckedAll) endConversation(firstRuleMessage.guild, {id: onVerifyId});
+		}
+
 		process.stdout.write("Done\n");
 		
 	
@@ -93,12 +94,9 @@ module.exports = {
 		}
 		process.stdout.write("Registering slash commands...");
 		await rest.put(
-			Routes.applicationCommands(client.user.id),
+			Routes.applicationGuildCommands(client.user.id, guildId),
 			{ body: client.commands.map(cmd => cmd.data)},
 		)
 		process.stdout.write("Done\n");
-	
-		setInterval(saveData, 60e3);
-		saveData();
 	}
 }

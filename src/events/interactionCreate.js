@@ -1,17 +1,18 @@
 const { InteractionType, Events } = require("discord.js");
-const { critical } = require("../components/Messages");
-const { endConversation } = require("../components/QuestionsManager");
-const { roles } = require("../../config");
+const { hasAccess } = require("../components/checkManager");
+const { critical, warning } = require("../components/messages");
+const { endConversation } = require("../components/questionsManager");
+const { roles } = require("../config");
 
 
 module.exports = {
 	event: Events.InteractionCreate,
 	async execute(interaction) {
 		if (interaction.type === InteractionType.MessageComponent) {
-			if (!interaction.member.roles.cache.has(roles.moderator)) return interaction.reply({
+			if (!hasAccess(interaction, "inspector")) return interaction.reply({
 				ephemeral: true,
 				embeds: [
-					warning(null, "Ошибка доступа!", "Данные кнопки только для ответственных сотрудников!", {embed: true})
+					warning(null, "Ошибка доступа!", "Данные кнопки только для проверяющих!", {embed: true})
 				]
 			})
 			try {
@@ -57,10 +58,10 @@ module.exports = {
 			const command = interaction.client.commands.get(interaction.commandName);
 			if (!command) return;
 			
-			if (!command.allowNonMods && !interaction.member.roles.cache.has(roles.moderator)) return interaction.reply({
+			if (!hasAccess(interaction, command.access)) return interaction.reply({
 				ephemeral: true,
 				embeds: [
-					warning(null, "Нет доступа к команде!", "Данная команда только для ответственных сотрудников!", {embed: true})
+					warning(null, "Нет доступа к команде!", "Данная команда недоступна для вас!", {embed: true})
 				]
 			})
 	

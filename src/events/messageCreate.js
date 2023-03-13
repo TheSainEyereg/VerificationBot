@@ -1,9 +1,10 @@
 const { Events } = require("discord.js");
-const { getVerify, addAnswer } = require("../components/DataManager");
-const { critical, regular } = require("../components/Messages");
-const { endConversation, sendForConfirmation } = require("../components/QuestionsManager");
-const { textQuestions } = require("../components/QuestionsList");
-const { roles } = require("../../config");
+const { getVerify, addAnswer, updateVerify } = require("../components/dataManager");
+const { critical, regular } = require("../components/messages");
+const { endConversation, sendForConfirmation, sendQuestion } = require("../components/questionsManager");
+const { textQuestions } = require("../components/questionsList");
+const { roles } = require("../config");
+const { States } = require("../components/enums");
 
 
 module.exports = {
@@ -12,20 +13,15 @@ module.exports = {
 		if (message.author.bot) return;
 	
 		const verify = getVerify(message.author.id);
-		if (!verify || verify.onConfirmation || verify.channel != message.channel.id) return;
-		
-		if (message.member.roles.cache.has(roles.approved)) return endConversation(message.guild, message.author);
-	
+		if (!verify || (verify.state !== States.OnText) && (verify.state !== States.OnPassword) || verify.channelId !== message.channel.id) return;
+
 		const currentQuestion = textQuestions[verify.question];
-	
+		
 		try {
 			const answer = await currentQuestion.answer(message);
-
-			if (!answer) {
-				verify.onSameQuestion++;
-				return; //TODO
-			};
 	
+			if (!answer) return;
+
 			addAnswer(message.author.id, currentQuestion.message, message.content);
 			
 			if (verify.question >= textQuestions.length-1) {
@@ -33,16 +29,14 @@ module.exports = {
 				return;
 			}
 	
-			verify.question++;
-			verify.onSameQuestion = 0;
+			updateVerify(message.author.id, "question", ++verify.question);
 	
-			const newQuestion = textQuestions[verify.question];
-			regular(message, verify.question == textQuestions.length-1 ? "Последний вопрос" : "Вопрос "+(verify.question+1), newQuestion.message, {image: newQuestion.image});
+			sendQuestion(message, verify.question);
 		} catch (e) {
 			console.error(e);
 			critical(message, "Ой! Ошибка!", `Код: \`${e.message}\``);
 		}
 
-		if (verify.shouldEnd) return endConversation(message.guild, message.author);
+		if (verify.state === States.ShouldEnd) return endConversation(message.guild, message.author);
 	}
 }

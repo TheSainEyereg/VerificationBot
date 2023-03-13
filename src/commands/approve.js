@@ -4,13 +4,14 @@ const { question, warning } = require("../components/Messages.js");
 
 module.exports =  {
 	data: new SlashCommandBuilder().setName("approve").setDescription("Подтверждает пользователя из этого канала."),
+	access: "inspector",
 	/**
 	 * Interaction
 	 * @param {Interaction} interaction - interaction
 	 */
 	async execute(interaction) {
 		const allVerifications = getAllVerify();
-		const userId = Object.entries(allVerifications).find(e => e[1].channel == interaction.channel.id)?.[0];
+		const userId = allVerifications.find(v => v.channelId === interaction.channel.id)?.[0];
 
 		if (!userId) return interaction.reply({
 			ephemeral: true,

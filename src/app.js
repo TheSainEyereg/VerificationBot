@@ -2,18 +2,19 @@ const fs = require("fs");
 const path = require("path");
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
-const { token } = require("../config");
-const { saveData } = require("./components/DataManager.js");
+const { token } = require("./config");
+const { saveData, closeDB } = require("./components/dataManager");
 
 
-process.on("unhandledRejection", (error) => {
-	console.error(error);
-	try {
-		error.requestData && console.log(JSON.stringify(error.requestData, null, "\t"));
-	} catch (e) {}
-});
-process.on("uncaughtException", console.error);
 process.stdin.resume();
+
+// process.on("unhandledRejection", (error) => {
+// 	console.error(error);
+// 	try {
+// 		error.requestData && console.log(JSON.stringify(error.requestData, null, "\t"));
+// 	} catch (e) {}
+// });
+// process.on("uncaughtException", console.error);
 
 
 const client = new Client({
@@ -41,6 +42,18 @@ process.stdout.write("Done!\n");
 client.login(token);
 
 
+setInterval(saveData, 60e3);
+
+
+function handleError(e) {
+	console.error(e);
+	process.exit(1);
+}
+
+process.on("unhandledRejection", handleError);
+process.on("uncaughtException", handleError)
+
+
 function handleInterrupt() {
 	process.removeAllListeners();
 
@@ -48,6 +61,8 @@ function handleInterrupt() {
 	client.destroy();
 	process.stdout.write("Saving data...");
 	saveData();
+	process.stdout.write("Closing DB...");
+	closeDB();
 	process.stdout.write("Done!\n");
 
 	process.exit(0);

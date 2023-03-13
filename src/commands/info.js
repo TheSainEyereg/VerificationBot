@@ -8,6 +8,7 @@ module.exports =  {
 			.setDescription("Пользователь")
 			.setRequired(true)
 	),
+	access: "user",
 	/**
 	 * Interaction
 	 * @param {Interaction} interaction - interaction

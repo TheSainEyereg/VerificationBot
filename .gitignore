@@ -131,6 +131,5 @@ dist
 config*.js
 
 # bot data
-data*.json
-answers
+*.db
 rules

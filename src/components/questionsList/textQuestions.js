@@ -1,7 +1,8 @@
 const { Message } = require("discord.js");
 const { settings } = require("../../config");
-const { getVerify } = require("./DataManager");
-const { warning, critical } = require("./Messages");
+const { updateVerify } = require("../dataManager");
+const { States } = require("../enums");
+const { warning, critical } = require("../messages");
 
 const yesAnswer = ["да", "конечно", "ес", "есс", "естественно", "кнчн", "а как же", "конечно же", "yes", "right", "true", "ну да", "дэм", "нуда", "+"];
 const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "ноу", "-"];
@@ -10,25 +11,26 @@ const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "
  * 
  * @param {string} text 
  * @param {Array} array
- * @returns 
+ * @returns Boolean
  */
-const findInArray = (text, array) => text.split(" ").find(w => array.includes(w.toLowerCase()));
+const findInArray = (text, array) => !! text.split(" ").find(w => array.includes(w.toLowerCase()));
 
 /**
- * @callback answerCallback
+ * @callback AnswerCallback
  * @param {Message} message
  * @returns {Promise<boolean>}
  */
 
 /**
  * @typedef {Object} textQuestion
- * @property {string} message
- * @property {string} image
- * @property {answerCallback} answer
+ * @property {String} message
+ * @property {String} [image]
+ * @property {AnswerCallback} answer
  */
 
 /** @type {textQuestion[]} */
-const textQuestions = [{
+const questions = [
+	{
 		message: "Сколько вам лет?",
 		async answer(message) {
 			const number = message.content.match(/[0-9]+/g)?.[0];
@@ -37,7 +39,7 @@ const textQuestions = [{
 				return false;
 			}
 			if (parseInt(number) < settings.minAge) {
-				getVerify(message.author.id).shouldEnd = true;
+				updateVerify(message.author.id, "state", States.ShouldEnd);
 
 				try {
 					const DMChannel = await message.author.createDM();
@@ -59,7 +61,7 @@ const textQuestions = [{
 				await warning(message, "Неверный формат!", "Ваш ник не соответствует формату, убедитесь, что вы ввели его правильно!");
 				return false;
 			}
-			getVerify(message.author.id).nickname = message.content;
+			updateVerify(message.author.id, "nickname", message.content)
 			await message.channel.edit({name: message.content});
 
 			try {
@@ -172,4 +174,4 @@ const textQuestions = [{
 	}
 ]
 
-module.exports =  {textQuestions};
+module.exports = questions;

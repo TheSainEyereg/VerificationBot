@@ -1,6 +1,13 @@
-const { rules, channels } = require("../../config");
-const { getRulesMessages, getRulesMessage } = require("./DataManager");
+const { rules, channels, roles } = require("../config");
+const { getRulesMessages, getRulesMessage } = require("./dataManager");
+const { User, Interaction, Message, PermissionFlagsBits } = require("discord.js");
 
+/**
+ * 
+ * @param {User} user 
+ * @param {*} options 
+ * @returns 
+ */
 async function isUserReactedAll(user, options) {
 	if (user.id === user.client.user.id) return false;
 
@@ -20,6 +27,13 @@ async function isUserReactedAll(user, options) {
 	return true;
 }
 
+/**
+ * 
+ * @param {User} user 
+ * @param {Message} message 
+ * @param {*} options 
+ * @returns 
+ */
 async function isUserReactedOther(user, message, options) {
 	if (user.id === user.client.user.id) return false;
 
@@ -43,4 +57,24 @@ async function isUserReactedOther(user, message, options) {
 	
 }
 
-module.exports = {isUserReactedAll, isUserReactedOther };
+
+/**
+ * 
+ * @param {Interaction} interaction 
+ * @param {"administrator"|"moderator"|"inspector"|"user"} type 
+ */
+function hasAccess(interaction, type) {
+	return ( 
+		interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
+		type === "moderator" && interaction.member.roles.cache.has(roles.moderator) ||
+		type === "inspector" && interaction.member.roles.cache.has(roles.inspector) ||
+		type === "user"
+	)
+}
+
+
+async function overdueCheck(user) {
+
+}
+
+module.exports = {isUserReactedAll, isUserReactedOther, hasAccess, overdueCheck};

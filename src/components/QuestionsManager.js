@@ -1,8 +1,9 @@
-const { Message, Guild, Client, User, EmbedBuilder, ActionRowBuilder, ButtonBuilder, TextChannel, ButtonStyle, ChannelType, PermissionFlagsBits } = require("discord.js");
-const { guildId, channels, roles } = require("../../config");
-const { deleteAnswer, deleteVerify, getAnswer, getCategory, getVerify, setCategory, setVerify } = require("./DataManager");
-const { textQuestions } = require("./QuestionsList");
-const { colors, regular, success } = require("./Messages");
+const { Message, Guild, Channel, User, EmbedBuilder, ActionRowBuilder, ButtonBuilder, TextChannel, ButtonStyle, ChannelType, PermissionFlagsBits } = require("discord.js");
+const { guildId, channels, roles } = require("../config");
+const { deleteAnswers, deleteVerify, getAnswers, getCategories, getVerify, addCategory, createVerify, deleteCategory, updateVerify } = require("./dataManager");
+const { textQuestions, quizQuestions } = require("./questionsList");
+const { colors, regular, success, warning } = require("./messages");
+const { States } = require("./enums");
 
 /**
  * @param {Guild} guild 
@@ -18,48 +19,71 @@ async function createCategory(guild) {
 			}
 		]
 	});
-	setCategory(category.id);
+	addCategory(category.id);
 
 	return category;
 }
 
 /**
- * @param {Client} client 
+ * @param {Guild} guild 
  */
-async function checkForCategory(client) {
-	const guild = client.guilds.cache.get(guildId);
+async function getCategory(guild) {
+	const categoryIds = getCategories();
+	if (!categoryIds.length) return createCategory(guild);
 
-	const categoryId = getCategory();
-	if (!categoryId) return createCategory(guild);
+	const categories = (await guild.channels.fetch()).filter(c => c.type === ChannelType.GuildCategory);
 
-	try {
-		const category = await guild.channels.fetch(categoryId);
-		console.log("Verification category found!");
-		return category;
-	} catch (e) {
-		console.log("Verification category not found!");
-		await createCategory(guild);
+	for (const categoryId of categoryIds) {
+		const category = categories.find(c => c.id === categoryId);
+		if (!category) {
+			deleteCategory(categoryId);
+			continue;
+		}
+
+		if (category.children.cache.size < 50) {
+			return category;
+		}
 	}
+
+	if (categoryIds.length > 2) return false;
+	return createCategory(guild);
 }
 
 
 /**
  * @param {Guild} guild
- * @param {User} user - user
+ * @param {String} id - Channel ID
  * @returns {Promise<Boolean>}
  */
-async function checkForChannel(guild, user) {
-	const userVeryfy = getVerify(user.id);
-
-	if (userVeryfy?.channel) {
+async function checkForChannel(guild, id) {
+	if (id) {
 		try {
-			await guild.channels.fetch(userVeryfy.channel);
+			await guild.channels.fetch(id);
 			return true;
 		} catch (e) {
 			return false;
 		}
 	}
 	return false;
+}
+
+/**
+ * 
+ * @param {Channel} channel 
+ * @param {number} index 
+ */
+async function sendQuestion(channel, index) {
+	if (index < textQuestions.length) {
+		const question = textQuestions[index];
+		await regular(
+			channel,
+			index === 0 ? "Первый вопрос" : index === textQuestions.length-1 ? "Последний вопрос" : "Вопрос " + (index+1),
+			question.message,
+			{image: question.image}
+		);
+	} else {
+
+	}
 }
 
 
@@ -70,36 +94,48 @@ async function checkForChannel(guild, user) {
 async function startConversation(guild, user) {
 	try {
 		const member = await guild.members.fetch(user.id);
-		if (member.roles.cache.has(roles.approved)) return false;
+		if (member.roles.cache.has(roles.approved)) return;
 	} catch (e) {
-		return false;
+		return;
 	}
 
-	const chanelExists = await checkForChannel(guild, user);
-	if (chanelExists) return false;
+	const userVerify = getVerify(user.id);
 
-	const categoryId = getCategory();
+	if (userVerify) {
+		const chanelExists = await checkForChannel(guild, userVerify.channelId);
+		if (chanelExists) return;
+	}
+
+	const category = await getCategory(guild);
+
+	if (!category) {
+		try {
+			const DMChannel = await member.user.createDM();
+			if (DMChannel) await warning(DMChannel, "О нет!", "Сейчас у нас слишком много заявок, пожалуйста, попробуйте позже!");
+		} catch (e) {}
+		return;
+	}
 
 	const channel = await guild.channels.create({
-		name: user.username,
+		name: !userVerify?.nickname ? user.username : userVerify.nickname,
 		type: ChannelType.GuildText,
-		parent: categoryId
+		parent: category.id
 	});
 
 	await channel.lockPermissions();
 	await channel.permissionOverwrites.edit(user, {ViewChannel: true, SendMessages: true});
 
-	setVerify(user.id, {
-		channel: channel.id,
-		question: 0,
-		onSameQuestion: 0
-	});
+	if (!userVerify) {
+		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60 * 1000 ,Object.keys(quizQuestions).sort(() => Math.random() - 0.5).join(","));
+		await regular(channel, "Привет, добро пожаловать в систему анкетирования!", "Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Учтите, что анкета будет автоматически удалена через 48 часов! Ну что же, начнем!", {content: user.toString()});
+		await sendQuestion(channel, 0);
+	} else {
+		updateVerify(user.id, "channelId", channel.id);
+		const rt = Date.now() - userVerify.closeIn;
+		await regular(channel, "Упс!", `Каким-то образом канал с вашей анкетой пропал, но ничего страшного, продолжим, где остановились! Учтите, что до закрытия вашей анкеты осталось ${Math.floor(rt / (1000 * 60 * 60) % 24)}ч ${Math.floor(rt / (1000 * 60) % 60)}м.`, {content: user.toString()});
+		await sendQuestion(channel, userVerify.question);
+	}
 
-	//await regular(channel, "Привет, добро пожаловать в систему анкетирования!", `Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем! \n\n**${textQuestions[0].message}**`, {imgae: textQuestions[0].image, content: user.toString()});
-	await regular(channel, "Привет, добро пожаловать в систему анкетирования!", "Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Ну что же, начнем!",{content: user.toString()});
-	await regular(channel, "Первый вопрос", textQuestions[0].message, {image: textQuestions[0].image});
-
-	return true;
 }
 
 /**
@@ -107,39 +143,37 @@ async function startConversation(guild, user) {
  * @param {User} user
  */
 async function endConversation(guild, user) {
-	const userVeryfy = getVerify(user.id);
+	const userVerify = getVerify(user.id);
+	if (!userVerify) return;
 
-	const chanelExists = await checkForChannel(guild, user);
+	const chanelExists = await checkForChannel(guild, userVerify.channelId);
 	if (chanelExists) {
-		await guild.channels.delete(userVeryfy.channel);
+		await guild.channels.delete(userVerify.channelId);
 	}
 
-	deleteAnswer(user.id);
 	deleteVerify(user.id);
 
-	if (!userVeryfy?.alertMessage) return true; // Ну чел тип даже не дошел до верефикации.
+	if (!userVerify?.alertMessage) return; // Ну чел тип даже не дошел до верификации.
 
 	/** @type {TextChannel} */
 	const answerChannel = await guild.channels.fetch(channels.answers);
 
 	try {
-		const alertMessage = await answerChannel.messages.fetch(userVeryfy.alertMessage);
+		const alertMessage = await answerChannel.messages.fetch(userVerify.messageId);
 		await alertMessage.delete();
 	} catch (e) {}
-
-	return true;
 }
 
 /**
  * @param {Message} message
  */
 async function sendForConfirmation(message) {
-	const userVeryfy = getVerify(message.author.id);
+	const userVerify = getVerify(message.author.id);
 
 	/** @type {TextChannel} */
-	const verifyChannel = await message.guild.channels.fetch(userVeryfy.channel);
+	const verifyChannel = await message.guild.channels.fetch(userVerify.channelId);
 
-	await verifyChannel.edit({name: `🟢${userVeryfy.nickname}`})
+	await verifyChannel.edit({name: `🟢${userVerify.nickname}`})
 	await verifyChannel.permissionOverwrites.edit(roles.moderator, {ViewChannel: true, SendMessages: true});
 
 	/** @type {TextChannel} */
@@ -155,7 +189,7 @@ async function sendForConfirmation(message) {
 				fields: [
 					{
 						name: "Канал",
-						value: `<#${userVeryfy.channel}>`
+						value: `<#${userVerify.channelId}>`
 					},
 					{
 						name: "Пользователь",
@@ -164,7 +198,7 @@ async function sendForConfirmation(message) {
 					},
 					{
 						name: "Ник в Minecraft",
-						value: `\`${userVeryfy.nickname}\``,
+						value: `\`${userVerify.nickname}\``,
 						inline: true
 					},
 					{
@@ -201,9 +235,10 @@ async function sendForConfirmation(message) {
 		]
 	})
 
-	deleteAnswer(message.author.id);
-	userVeryfy.alertMessage = alertMessage.id;
-	userVeryfy.onConfirmation = true;
+	deleteAnswers(message.author.id);
+
+	updateVerify(message.author.id, "messageId", alertMessage.id);
+	updateVerify(message.author.id, "state", States.OnQuiz);
 
 	await success(message, "Поздравляю, вы прошли систему анкетирования!", "Теперь дождитесь ответа ответственного сотрудника для подтверждения!");
 
@@ -211,4 +246,4 @@ async function sendForConfirmation(message) {
 }
 
 
-module.exports = {checkForCategory, startConversation, sendForConfirmation, endConversation};
+module.exports = {sendQuestion, startConversation, sendForConfirmation, endConversation};

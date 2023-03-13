@@ -1,88 +1,152 @@
 const fs = require("fs");
+const Database = require("better-sqlite3");
+const { guildId } = require("../config");
 
+const db = new Database("database.db");
 
-/**
- * @typedef {Object} data
- * @property {string} message
- * @property {string} image
- * @property {answerCallback} answer
- */
+db.exec(`CREATE TABLE IF NOT EXISTS "settings" (
+	"guildId"	TEXT PRIMARY KEY,
+	"rulesJSON"	TEXT,
+	"categories"	TEXT
+)`);
+db.prepare("INSERT OR IGNORE INTO settings(guildId) VALUES(?)").run(guildId);
 
-const data = (() => {
-	try {
-		return JSON.parse(fs.readFileSync("./data.json"));
-	} catch (e) {
-		return {
-			onVerify: {},
-			rulesMessages: {}
-		};
-	}
-})();
+db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
+	"userId"	TEXT PRIMARY KEY,
+	"channelId"	TEXT,
+	"state"	INTEGER,
+	"closeIn"	INTEGER,
+	"question"	INTEGER,
+	"answers"	TEXT,
+	"quizOrder"	TEXT,
+	"quizAnswerOrder" TEXT,
+	"messageId" 	TEXT,
+	"nickname"	TEXT,
+	"tempPassword"	TEXT
+)`);
 
-function saveData() {
-	fs.writeFileSync("./data.json", JSON.stringify(data, null, "\t"));
-}
+db.exec(`CREATE TABLE IF NOT EXISTS "users" (
+	"userId"	TEXT PRIMARY KEY,
+	"name"	TEXT,
+	"oldNames"	TEXT,
+	"banUntil"	INTEGER,
+	"banReason" TEXT
+)`);
+
+const cache = {}
 
 
 function getRulesMessages() {
-	return data.rulesMessages;
+	if (!cache.rulesMessages) {
+		try {
+			const res = db.prepare("SELECT rulesJSON FROM settings WHERE guildId = ?").get(guildId);
+			return cache.rulesMessages = JSON.parse(res.rulesJSON) || {};
+		} catch (e) {};
+
+		return cache.rulesMessages = {}
+	}
+	
+	return cache.rulesMessages;
 }
 
 function getRulesMessage(type) {
-	return getRulesMessages()[type];
+	return getRulesMessages()[type]
 }
 
 function setRulesMessage(type, message) {
-	data.rulesMessages[type] = message.id;
+	cache.rulesMessages[type] = message.id;
+	db.prepare("UPDATE settings SET rulesJSON = ? WHERE guildId = ?").run(JSON.stringify(cache.rulesMessages), guildId);
 }
 
+
+function getCategories() {
+	if (!cache.categories) {
+		try {
+			const res = db.prepare("SELECT categories FROM settings WHERE guildId = ?").get(guildId);
+			return cache.categories = res.categories.match(/[0-9]+/g) || []; // It should crash when no categories property but if something go wrong we'll get [] instead of null
+		} catch (e) {};
+
+		return cache.categories = []
+	}
+	
+	return cache.categories;
+}
+
+function addCategory(id) {
+	cache.categories.push(id);
+	db.prepare("UPDATE settings SET categories = ? WHERE guildId = ?").run(cache.categories.join(","), guildId);
+}
+
+function deleteCategory(id) {
+	cache.categories.splice(cache.categories.indexOf(id), 1);
+	db.prepare("UPDATE settings SET categories = ? WHERE guildId = ?").run(cache.categories.join(","), guildId);
+}
+
+
 function getAllVerify() {
-	return data.onVerify;
+	return db.prepare("SELECT * FROM verify").all();
+}
+
+function createVerify(id, channelId, closeIn, quizOrder) {
+	db.prepare("INSERT OR IGNORE INTO verify(userId, channelId, question, state, closeIn, quizOrder) VALUES(?, ?, 0, 0, ?, ?)").run(id, channelId, closeIn, quizOrder);
 }
 
 function getVerify(id) {
-	return data.onVerify[id];
+	return db.prepare("SELECT * FROM verify WHERE userId = ?").get(id);
 }
 
-function setVerify(id, object) {
-	data.onVerify[id] = object;
+function findVerify(item, value, all) {
+	const stmt = db.prepare(`SELECT * FROM verify WHERE ${item} = ?`);
+	return all ? stmt.all(value) : stmt.get(value);
+}
+
+function updateVerify(id, item, value) {
+	db.prepare(`UPDATE verify SET ${item} = ? WHERE userId = ?`).run(value, id);
 }
 
 function deleteVerify(id) {
-	delete data.onVerify[id];
-}
-
-
-function getCategory() {
-	return data.category;
-}
-
-function setCategory(id) {
-	data.category = id;
+	return db.prepare("DELETE FROM verify WHERE userId = ?").run(id);
 }
 
 
 function addAnswer(id, question, answer) {
-	if (!fs.existsSync("./answers/")) fs.mkdirSync("./answers/");
+	const answers = getAnswers(id);
 
-	fs.appendFileSync(`./answers/${id}.txt` , `Вопрос: ${question.message}\nОтвет: ${answer}\n\n`);
+	answers.push({question, answer});
+	
+	updateVerify(id, "answers", JSON.stringify(answers));
 }
 
-function getAnswer(id) {
-	if (!fs.existsSync(`./answers/${id}.txt`)) return false;
-	return fs.readFileSync(`./answers/${id}.txt`).toString();
+function getAnswers(id) {
+	if (!cache["answers"+id]) {
+		try {
+			const res = db.prepare("SELECT answers FROM verify WHERE userId = ?").get(id);
+			return cache["answers"+id] = JSON.parse(res.answers) || [];
+		} catch (e) {}
+
+		return cache["answers"+id] = [];
+	}
+
+	return cache["answers"+id];
 }
 
-function deleteAnswer(id) {
-	if (!fs.existsSync(`./answers/${id}.txt`)) return false;
-	fs.rmSync(`./answers/${id}.txt`);
+function deleteAnswers(id) {
+	delete cache["answers"+id];
+	updateVerify(id, "answers", "NULL");
 }
 
+
+function saveData() {}
+
+function closeDB() {
+	db.close();
+}
 
 module.exports = {
 	saveData,
 	getRulesMessages, getRulesMessage, setRulesMessage,
-	getAllVerify, getVerify, setVerify, deleteVerify,
-	getCategory, setCategory,
-	addAnswer, getAnswer, deleteAnswer
+	getAllVerify, getVerify, findVerify, createVerify, updateVerify, deleteVerify,
+	getCategories, addCategory, deleteCategory,
+	addAnswer, getAnswers, deleteAnswers,
+	closeDB
 };
