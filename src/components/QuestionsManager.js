@@ -218,7 +218,7 @@ async function sendForConfirmation(message) {
 		files: [
 			{
 				name: "Ответы.txt",
-				attachment: getAnswer(message.author.id)
+				attachment: Buffer.from(getAnswers(message.author.id).map(qa => `Вопрос: ${qa.question}\nОтвет: ${qa.answer}\n\n`).join(""))
 			}
 		],
 		components: [
