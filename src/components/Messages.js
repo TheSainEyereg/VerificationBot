@@ -1,13 +1,6 @@
-const {ColorResolvable, EmbedBuilder, Message, TextChannel, Colors} = require("discord.js");
+const {ColorResolvable, EmbedBuilder, Message, TextChannel} = require("discord.js");
+const { Colors } = require("./enums");
 
-const colors = {
-	regular: 0xc4e85f,
-	url: 0x1194f0,
-	success: 0x44e838,
-	warning: 0xe5e838,
-	critical: 0xe83838,
-	question: 0x1a5fc7
-};
 /**
  * Regular message
  * @param {Message|TextChannel} source - A message or text channel to send the message to
@@ -23,12 +16,12 @@ const colors = {
 function regular(source, title, description, opt) {
 	/** @type {TextChannel} */
 	const channel = source?.channel || source;
-	const embed = new EmbedBuilder({color: opt?.color || colors.regular});
+	const embed = new EmbedBuilder({color: opt?.color || Colors.Regular});
 	title && embed.setTitle(title);
 	description && embed.setDescription(description);
 	opt?.image && embed.setImage(opt.image);
 	if (opt?.embed) return embed;
-	return channel.send(Object.assign({embeds: [embed]}, opt?.content ? {content: opt.content}:{}));
+	return channel.send(Object.assign({embeds: [embed]}, opt?.content && {content: opt.content}, ));
 }
 /**
  * Message with a link
@@ -44,7 +37,7 @@ function regular(source, title, description, opt) {
 function url(source, url, text, opt) {
 	const channel = source.channel || source;
 	const embed = new EmbedBuilder({
-		color: colors.url,
+		color: Colors.Url,
 		title: text,
 		url
 	});
@@ -64,7 +57,7 @@ function url(source, url, text, opt) {
  * @returns Promise<Message> | Embed
  */
 function success(source, title, description, opt) {
-	return regular(source, opt?.circle ? ":green_circle: "+title : ":white_check_mark: "+title, description, Object.assign({color: colors.success}, opt));
+	return regular(source, opt?.circle ? ":green_circle: "+title : ":white_check_mark: "+title, description, Object.assign({color: Colors.Success}, opt));
 }
 /**
  * Warning message
@@ -78,7 +71,7 @@ function success(source, title, description, opt) {
  * @returns Promise<Message> | Embed
  */
 function warning(source, title, description, opt) {
-	return regular(source, opt?.circle ? ":yellow_circle: "+title : ":warning: "+title, description, Object.assign({color: colors.warning}, opt));
+	return regular(source, opt?.circle ? ":yellow_circle: "+title : ":warning: "+title, description, Object.assign({color: Colors.Warning}, opt));
 }
 /**
  * Critical message
@@ -92,7 +85,7 @@ function warning(source, title, description, opt) {
  * @returns Promise<Message> | Embed
  */
 function critical(source, title, description, opt) {
-	return regular(source, opt?.circle ? ":red_circle: "+title : ":no_entry_sign: "+title, description, Object.assign({color: colors.critical}, opt));
+	return regular(source, opt?.circle ? ":red_circle: "+title : ":no_entry_sign: "+title, description, Object.assign({color: Colors.Critical}, opt));
 }
 
 /**
@@ -107,7 +100,7 @@ function critical(source, title, description, opt) {
  * @returns Promise<Message> | Embed
  */
 function question(source, title, description, opt) {
-	return regular(source, opt?.circle ? ":blue_circle: "+title : ":question: "+title, description, Object.assign({color: colors.question}, opt));
+	return regular(source, opt?.circle ? ":blue_circle: "+title : ":question: "+title, description, Object.assign({color: Colors.Question}, opt));
 }
 
-module.exports = {regular, url, success, warning, critical, question, colors};
+module.exports = {regular, url, success, warning, critical, question};

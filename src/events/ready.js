@@ -8,8 +8,8 @@ const { isUserReactedOther, isUserReactedAll } = require("../components/checkMan
 const { token, channels, rules, guildId } = require("../config");
 
 
-function sendRuleMessage(channel, type) {
-	return channel.send(
+async function sendRuleMessage(channel, type) {
+	const message = await channel.send(
 		Object.assign(
 			{
 				embeds: [
@@ -23,13 +23,9 @@ function sendRuleMessage(channel, type) {
 			},
 			rules[type].attachment && {files: [rules[type].attachment]}
 		)
-	).then(message => {
-		message.react("✅");
-		setRulesMessage(type, message);
-	}).catch(err => {
-		console.log(err);
-		process.exit(1);
-	});
+	);
+	await message.react("✅");
+	setRulesMessage(type, message);
 }
 
 const rest = new REST({ version: "10" }).setToken(token);
@@ -46,7 +42,7 @@ module.exports = {
 		for (const type of Object.keys(rules)) {
 			try {
 				const id = getRulesMessage(type);
-				if (!id) throw "";
+				if (!id) throw 0;
 				
 				await channel.messages.fetch(id);
 				console.log(`Message "${type}" found!`);

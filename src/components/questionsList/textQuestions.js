@@ -4,8 +4,8 @@ const { updateVerify } = require("../dataManager");
 const { States } = require("../enums");
 const { warning, critical } = require("../messages");
 
-const yesAnswer = ["да", "конечно", "ес", "есс", "естественно", "кнчн", "а как же", "конечно же", "yes", "right", "true", "ну да", "дэм", "нуда", "+"];
-const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "ноу", "-"];
+const yesAnswer = ["да", "конечно", "ес", "есс", "естественно", "кнчн", "а как же", "конечно же", "yes", "right", "true", "ну да", "дэм", "нуда", "+", "1"];
+const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "ноу", "-", "0", "секрет"];
 
 /**
  * 
@@ -75,7 +75,7 @@ const questions = [
 	{
 		message: "Сколько вы играете в Minecraft? С какой версии?",
 		async answer(message) {
-			if (!message.content.match(/[0-9]/g).length) {
+			if (!message.content.match(/[0-9]/g)?.length) {
 				await warning(message, "Вы должны написать хоть одно число в вашем сообщении!")
 				return false;
 			}

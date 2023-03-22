@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"test": "cross-env NODE_ENV=test node ./src/app",
+		"dev": "cross-env NODE_ENV=development node ./src/app",
 		"start": "cross-env NODE_ENV=production node ./src/app"
 	},
 	"dependencies": {

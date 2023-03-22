@@ -1,6 +1,7 @@
 /**
  * @typedef {Object} quizQuestions
  * @property {String} message
+ * @property {String} [image]
  * @property {String[]} answers
  * @property {String[]} correct
  */

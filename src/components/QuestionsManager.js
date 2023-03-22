@@ -1,9 +1,9 @@
-const { Message, Guild, Channel, User, EmbedBuilder, ActionRowBuilder, ButtonBuilder, TextChannel, ButtonStyle, ChannelType, PermissionFlagsBits } = require("discord.js");
-const { guildId, channels, roles } = require("../config");
+const { Message, Interaction, Guild, Channel, User, EmbedBuilder, ActionRowBuilder, ButtonBuilder, TextChannel, ButtonStyle, ChannelType, PermissionFlagsBits } = require("discord.js");
+const { channels, roles } = require("../config");
 const { deleteAnswers, deleteVerify, getAnswers, getCategories, getVerify, addCategory, createVerify, deleteCategory, updateVerify } = require("./dataManager");
 const { textQuestions, quizQuestions } = require("./questionsList");
-const { colors, regular, success, warning } = require("./messages");
-const { States } = require("./enums");
+const { regular, success, warning } = require("./messages");
+const { States, Colors } = require("./enums");
 
 /**
  * @param {Guild} guild 
@@ -70,19 +70,74 @@ async function checkForChannel(guild, id) {
 /**
  * 
  * @param {Channel} channel 
- * @param {number} index 
+ * @param {Object} verify 
  */
-async function sendQuestion(channel, index) {
-	if (index < textQuestions.length) {
-		const question = textQuestions[index];
+async function sendQuestion(channel, verify) {
+	if (verify.state === States.OnText) {
+		const question = textQuestions[verify.question];
 		await regular(
 			channel,
-			index === 0 ? "Первый вопрос" : index === textQuestions.length-1 ? "Последний вопрос" : "Вопрос " + (index+1),
+			verify.question === 0 ? "Первый вопрос" : verify.question === textQuestions.length-1 ? "Последний вопрос" : "Вопрос " + (verify.question+1),
 			question.message,
 			{image: question.image}
 		);
-	} else {
+	}
 
+	if (verify.state === States.OnQuiz) {
+		const quizOrder = verify.quizOrder.split(",");
+
+		const question = quizQuestions[quizOrder[verify.question]];
+
+		const answerOrder = Object.keys(question.answers).sort(() => Math.random() - 0.5);
+
+		const components = [];
+		for (const [i, answer] of answerOrder.entries()) {
+			const answerText = question.answers[answer];
+
+			components.push(new ButtonBuilder({
+				custom_id: "answer"+i,
+				label: answerText,
+				style: ButtonStyle.Primary
+			}))
+		}
+
+		await channel.send({
+			embeds: [
+				regular(
+					null,
+					verify.question === 0 ? "Первый вопрос теста" : verify.question === quizQuestions.length-1 ? "Последний вопрос теста" : "Тестовый вопрос " + (verify.question+1),
+					question.message,
+					{image: question.image, embed: true}
+				)
+			],
+			components: [ new ActionRowBuilder({components}) ]
+		})
+
+		updateVerify(verify.userId, "quizAnswerOrder", answerOrder.join(","));
+	}
+
+	if (verify.state === States.OnPassword) {
+		await channel.send({
+			embeds: [
+				warning(
+					null,
+					"Установка пароля",
+					"Внимание! Для того, чтобы обезопасить ваш будущий аккаунт нам нужно попросить у вас пароль, который будет установлен на ваш аккаунт по умолчанию. Таким образом, после подтверждения вашей заявки кто угодно не сможет зайти под вашим именем. Если вы переживаете за вашу конфиденциальность, вы можете придумать отдельный пароль для аккаунта на сервере, мы не заставляем вас вводить свои настоящие пароли. \n\nПароль всегда можно сменить в лобби через команду `/changepassword <старый пароль> <новый пароль>`",
+					{embed: true}
+				)
+			],
+			components: [
+				new ActionRowBuilder({
+					components: [
+						new ButtonBuilder({
+							customId: "requestPassword",
+							label: "Всё понятно, ввести пароль",
+							style: ButtonStyle.Primary
+						})
+					]
+				})
+			]
+		})
 	}
 }
 
@@ -128,14 +183,20 @@ async function startConversation(guild, user) {
 	if (!userVerify) {
 		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60 * 1000 ,Object.keys(quizQuestions).sort(() => Math.random() - 0.5).join(","));
 		await regular(channel, "Привет, добро пожаловать в систему анкетирования!", "Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Учтите, что анкета будет автоматически удалена через 48 часов! Ну что же, начнем!", {content: user.toString()});
-		await sendQuestion(channel, 0);
-	} else {
-		updateVerify(user.id, "channelId", channel.id);
-		const rt = Date.now() - userVerify.closeIn;
-		await regular(channel, "Упс!", `Каким-то образом канал с вашей анкетой пропал, но ничего страшного, продолжим, где остановились! Учтите, что до закрытия вашей анкеты осталось ${Math.floor(rt / (1000 * 60 * 60) % 24)}ч ${Math.floor(rt / (1000 * 60) % 60)}м.`, {content: user.toString()});
-		await sendQuestion(channel, userVerify.question);
+		await sendQuestion(channel, {question: 0, state: States.OnText});
+		return;
 	}
 
+	updateVerify(user.id, "channelId", userVerify.channelId = channel.id);
+
+	if (userVerify.state === States.OnConfirmation) {
+		await success(channel, "Все готово!", "Однако каким-то образом канал с вашей анкетой пропал, но ничего страшного, вы уже все сделали и вам лишь осталось подождать до тех пор, пока вам не ответит проверяющий и не подтвердит вас. \n\nКанал был пересоздан на случай, если у персонала возникнут дополнительные вопросы к вам.", {content: user.toString()});
+		return;
+	}
+
+	const rt = userVerify.openUntil - Date.now();
+	await regular(channel, "Упс!", `Каким-то образом канал с вашей анкетой пропал, но ничего страшного, продолжим, где остановились! Учтите, что до закрытия вашей анкеты осталось ${Math.floor(rt / (1000 * 60 * 60) % 24)}ч ${Math.floor(rt / (1000 * 60) % 60)}м.`, {content: user.toString()});
+	await sendQuestion(channel, userVerify);
 }
 
 /**
@@ -164,26 +225,58 @@ async function endConversation(guild, user) {
 	} catch (e) {}
 }
 
+
 /**
  * @param {Message} message
  */
-async function sendForConfirmation(message) {
+async function sendForQuiz(message) {
 	const userVerify = getVerify(message.author.id);
-
+	
 	/** @type {TextChannel} */
 	const verifyChannel = await message.guild.channels.fetch(userVerify.channelId);
 
-	await verifyChannel.edit({name: `🟢${userVerify.nickname}`})
-	await verifyChannel.permissionOverwrites.edit(roles.moderator, {ViewChannel: true, SendMessages: true});
+	updateVerify(message.author.id, "state", userVerify.state = States.OnQuiz);
+	updateVerify(message.author.id, "question",  userVerify.question = 0);
+	
+	await regular(verifyChannel, "Поздравляем! Первый этап позади!", "Вы ответили на все нужные вопросы и теперь вам нужно пройти короткий тестик! Поехали!")
+	await sendQuestion(verifyChannel, userVerify);
+}
+
+/**
+ * 
+ * @param {Interaction} interaction 
+ */
+async function askForPassword(interaction) {
+	const userVerify = getVerify(interaction.user.id);
+	
+	/** @type {TextChannel} */
+	const verifyChannel = await interaction.guild.channels.fetch(userVerify.channelId);
+	updateVerify(interaction.user.id, "state", userVerify.state = States.OnPassword);
+		
+	await regular(verifyChannel, "Вот и готово!", "Вы ответили на все вопросы и прошли тест, однако есть ещё одна важная вещь! Для того, чтобы после добавления вас в whitelist, на ваш аккаунт не вошел кто-либо вам нужно установить временный пароль, который автоматически применится к вашему ник-нейму на сервере!");
+	await sendQuestion(verifyChannel, userVerify);
+}
+
+/**
+ * @param {Interaction} interaction
+ */
+async function sendForConfirmation(interaction) {
+	const userVerify = getVerify(interaction.user.id);
 
 	/** @type {TextChannel} */
-	const answerChannel = await message.guild.channels.fetch(channels.answers);
+	const verifyChannel = await interaction.guild.channels.fetch(userVerify.channelId);
+
+	await verifyChannel.edit({name: `🟢${userVerify.nickname}`})
+	await verifyChannel.permissionOverwrites.edit(roles.inspector, {ViewChannel: true, SendMessages: true});
+
+	/** @type {TextChannel} */
+	const answerChannel = await interaction.guild.channels.fetch(channels.answers);
 
 	const alertMessage = await answerChannel.send({
 		content: `<@&${roles.moderator}>`,
 		embeds: [
 			new EmbedBuilder({
-				color: colors.regular,
+				color: Colors.Regular,
 				title: "Новый игрок на подтверждение",
 				description: "Новый игрок запрашивает подтверждение, пройдите в канал для беседы с ним!",
 				fields: [
@@ -193,7 +286,7 @@ async function sendForConfirmation(message) {
 					},
 					{
 						name: "Пользователь",
-						value: `<@${message.author.id}>`,
+						value: `<@${interaction.user.id}>`,
 						inline: true
 					},
 					{
@@ -203,11 +296,11 @@ async function sendForConfirmation(message) {
 					},
 					{
 						name: "Дата регистрации аккаунта",
-						value: message.author.createdAt.toLocaleString("ru")
+						value: interaction.user.createdAt.toLocaleString("ru")
 					},
 					{
 						name: "Дата входа на сервер",
-						value: message.member.joinedAt.toLocaleString("ru")
+						value: interaction.member.joinedAt.toLocaleString("ru")
 					}
 				],
 				footer: {
@@ -218,14 +311,14 @@ async function sendForConfirmation(message) {
 		files: [
 			{
 				name: "Ответы.txt",
-				attachment: Buffer.from(getAnswers(message.author.id).map(qa => `Вопрос: ${qa.question}\nОтвет: ${qa.answer}\n\n`).join(""))
+				attachment: Buffer.from(getAnswers(interaction.user.id).map(qa => `Вопрос: ${qa.q}\nОтвет: ${qa.a}\n\n`).join(""))
 			}
 		],
 		components: [
 			new ActionRowBuilder({
 				components: [
 					new ButtonBuilder({
-						customId: "reject"+message.author.id,
+						customId: "reject"+interaction.user.id,
 						label: "Отклонить сразу",
 						style: ButtonStyle.Danger,
 						emoji: "✖"
@@ -235,15 +328,13 @@ async function sendForConfirmation(message) {
 		]
 	})
 
-	deleteAnswers(message.author.id);
+	deleteAnswers(interaction.user.id);
 
-	updateVerify(message.author.id, "messageId", alertMessage.id);
-	updateVerify(message.author.id, "state", States.OnQuiz);
+	updateVerify(interaction.user.id, "messageId", alertMessage.id);
+	updateVerify(interaction.user.id, "state", States.OnConfirmation);
 
-	await success(message, "Поздравляю, вы прошли систему анкетирования!", "Теперь дождитесь ответа ответственного сотрудника для подтверждения!");
-
-	return true;
+	await success(interaction.channel, "Поздравляю, вы прошли систему анкетирования!", "Теперь дождитесь ответа ответственного сотрудника для подтверждения! И да, ваша анкета не будет закрыта до тех пор, пока вас не подтвердят :)");
 }
 
 
-module.exports = {sendQuestion, startConversation, sendForConfirmation, endConversation};
+module.exports = {sendQuestion, startConversation, sendForQuiz, askForPassword, sendForConfirmation, endConversation};

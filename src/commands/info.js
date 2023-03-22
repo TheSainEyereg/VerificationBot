@@ -1,5 +1,5 @@
 const { Interaction, EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const { colors } = require("../components/Messages.js");
+const { Colors } = require("../components/enums");
 
 module.exports =  {
 	data: new SlashCommandBuilder().setName("info").setDescription("Получает дату регистрации пользователя Discord.").addUserOption(option =>
@@ -19,7 +19,7 @@ module.exports =  {
 		interaction.reply({
 			embeds: [
 				new EmbedBuilder({
-					color: colors.regular,
+					color: Colors.Regular,
 					title: "Информация о пользователе "+member.displayName,
 					fields: [
 						{

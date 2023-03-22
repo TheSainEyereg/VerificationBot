@@ -54,7 +54,7 @@ process.on("unhandledRejection", handleError);
 process.on("uncaughtException", handleError)
 
 
-function handleInterrupt() {
+function handleInterrupt(code) {
 	process.removeAllListeners();
 
 	process.stdout.write("Interrupt detected, destroying client...");
@@ -63,9 +63,9 @@ function handleInterrupt() {
 	saveData();
 	process.stdout.write("Closing DB...");
 	closeDB();
-	process.stdout.write("Done!\n");
+	process.stdout.write(`Done! (${code})\n`);
 
-	process.exit(0);
+	process.exit(code);
 }
 
 process.on("exit", handleInterrupt);

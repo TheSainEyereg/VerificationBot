@@ -5,36 +5,38 @@ const { guildId } = require("../config");
 const db = new Database("database.db");
 
 db.exec(`CREATE TABLE IF NOT EXISTS "settings" (
-	"guildId"	TEXT PRIMARY KEY,
-	"rulesJSON"	TEXT,
+	"guildId"		TEXT PRIMARY KEY,
+	"rulesJSON"		TEXT,
 	"categories"	TEXT
 )`);
 db.prepare("INSERT OR IGNORE INTO settings(guildId) VALUES(?)").run(guildId);
 
 db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
-	"userId"	TEXT PRIMARY KEY,
-	"channelId"	TEXT,
-	"state"	INTEGER,
-	"closeIn"	INTEGER,
-	"question"	INTEGER,
-	"answers"	TEXT,
-	"quizOrder"	TEXT,
-	"quizAnswerOrder" TEXT,
-	"messageId" 	TEXT,
-	"nickname"	TEXT,
-	"tempPassword"	TEXT
+	"userId"			TEXT PRIMARY KEY,
+	"channelId"			TEXT,
+	"state"				INTEGER,
+	"openUntil"			INTEGER,
+	"mutedUntil"		INTEGER,
+	"question"			INTEGER,
+	"answers"			TEXT,
+	"quizOrder"			TEXT,
+	"quizAnswerOrder"	TEXT,
+	"wrongCount"		TEXT,
+	"messageId" 		TEXT,
+	"nickname"			TEXT,
+	"tempPassword"		TEXT
 )`);
 
 db.exec(`CREATE TABLE IF NOT EXISTS "users" (
 	"userId"	TEXT PRIMARY KEY,
-	"name"	TEXT,
+	"name"		TEXT,
 	"oldNames"	TEXT,
-	"banUntil"	INTEGER,
+	"bannedUntil"	INTEGER,
 	"banReason" TEXT
 )`);
 
-const cache = {}
 
+const cache = {}
 
 function getRulesMessages() {
 	if (!cache.rulesMessages) {
@@ -87,12 +89,12 @@ function getAllVerify() {
 	return db.prepare("SELECT * FROM verify").all();
 }
 
-function createVerify(id, channelId, closeIn, quizOrder) {
-	db.prepare("INSERT OR IGNORE INTO verify(userId, channelId, question, state, closeIn, quizOrder) VALUES(?, ?, 0, 0, ?, ?)").run(id, channelId, closeIn, quizOrder);
-}
-
 function getVerify(id) {
 	return db.prepare("SELECT * FROM verify WHERE userId = ?").get(id);
+}
+
+function createVerify(id, channelId, openUntil, quizOrder) {
+	db.prepare("INSERT OR IGNORE INTO verify(userId, channelId, openUntil, quizOrder, question, state, wrongCount) VALUES(?, ?, ?, ?, 0, 0, 0)").run(id, channelId, openUntil, quizOrder);
 }
 
 function findVerify(item, value, all) {
@@ -108,11 +110,16 @@ function deleteVerify(id) {
 	return db.prepare("DELETE FROM verify WHERE userId = ?").run(id);
 }
 
-
-function addAnswer(id, question, answer) {
+/**
+ * 
+ * @param {String} id - ID 
+ * @param {String} q - question
+ * @param {String} a - answer
+ */
+function addAnswer(id, q, a) {
 	const answers = getAnswers(id);
 
-	answers.push({question, answer});
+	answers.push({q, a});
 	
 	updateVerify(id, "answers", JSON.stringify(answers));
 }
@@ -132,7 +139,32 @@ function getAnswers(id) {
 
 function deleteAnswers(id) {
 	delete cache["answers"+id];
-	updateVerify(id, "answers", "NULL");
+	updateVerify(id, "answers", null);
+}
+
+
+function getAllUsers() {
+	return db.prepare("SELECT * FROM users").all();
+}
+
+function getUser(id) {
+	return db.prepare("SELECT * FROM users WHERE userId = ?").get(id);
+}
+
+function createUser(id, name) {
+	db.prepare("INSERT OR IGNORE INTO users(userId, name) VALUES(?, ?)").run(id, name);
+}
+
+function getUserByName(name) {
+	return db.prepare(`SELECT * FROM users WHERE name = ?`).get(name);
+}
+
+function updateUser(id, item, value) {
+	db.prepare(`UPDATE users SET ${item} = ? WHERE userId = ?`).run(value, id);
+}
+
+function deleteUser(id) {
+	return db.prepare("DELETE FROM users WHERE userId = ?").run(id);
 }
 
 
@@ -145,8 +177,9 @@ function closeDB() {
 module.exports = {
 	saveData,
 	getRulesMessages, getRulesMessage, setRulesMessage,
-	getAllVerify, getVerify, findVerify, createVerify, updateVerify, deleteVerify,
 	getCategories, addCategory, deleteCategory,
+	getAllVerify, getVerify, findVerify, createVerify, updateVerify, deleteVerify,
 	addAnswer, getAnswers, deleteAnswers,
+	getAllUsers, getUser, getUserByName, createUser, updateUser, deleteUser,
 	closeDB
 };

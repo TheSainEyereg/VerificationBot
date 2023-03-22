@@ -1,5 +1,5 @@
 const { Interaction, ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require("discord.js");
-const { getAllVerify } = require("../components/DataManager.js");
+const { getAllVerify, findVerify } = require("../components/DataManager.js");
 const { question, warning } = require("../components/Messages.js");
 
 module.exports =  {
@@ -10,10 +10,9 @@ module.exports =  {
 	 * @param {Interaction} interaction - interaction
 	 */
 	async execute(interaction) {
-		const allVerifications = getAllVerify();
-		const userId = allVerifications.find(v => v.channelId === interaction.channel.id)?.[0];
+		const verify = findVerify("channelId", interaction.channel.id);
 
-		if (!userId) return interaction.reply({
+		if (!verify) return interaction.reply({
 			ephemeral: true,
 			embeds: [
 				warning(null, "Неправильное использование!", "Команда должна запускаться исключительно в канале для верификации пользователя!", {embed: true})
@@ -29,7 +28,7 @@ module.exports =  {
 				new ActionRowBuilder({
 					components: [
 						new ButtonBuilder({
-							customId: "approve"+userId,
+							customId: "approve"+verify.userId,
 							label: "Подтвердить",
 							style: ButtonStyle.Success,
 							emoji: "✔"

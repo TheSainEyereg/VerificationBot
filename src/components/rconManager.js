@@ -1,7 +1,17 @@
 const { Rcon } = require("rcon-client");
 
-let lastRconRequest;
 
-function addToWhitelist(name) {
-	if (1) {}
+function getWhitelist() {}
+
+function addToWhitelist(nickname) {}
+
+function removeFromWhitelist(nickname) {}
+
+function clearWhitelist() {}
+
+function updatePassword(nickname, password) {}
+
+module.exports = {
+	getWhitelist, addToWhitelist, removeFromWhitelist, clearWhitelist,
+	updatePassword
 }
