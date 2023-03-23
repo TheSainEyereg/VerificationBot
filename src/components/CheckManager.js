@@ -66,10 +66,10 @@ async function isUserReactedOther(user, message, options) {
  * @returns {Boolean}
  */
 const hasAccess = (interaction, type) =>  
-	interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
-	type === "moderator" && interaction.member.roles.cache.has(roles.moderator) ||
-	type === "inspector" && interaction.member.roles.cache.has(roles.inspector) ||
-	type === "user";
+	type === "user" || // Allowed for all
+	interaction.member.permissions.has(PermissionFlagsBits.Administrator) || // Administrator can do anything!
+	type === "moderator" && interaction.member.roles.cache.has(roles.moderator) || // moderator != inspector
+	type === "inspector" && interaction.member.roles.cache.has(roles.inspector); // inspector != moderator
 
 
 module.exports = {isUserReactedAll, isUserReactedOther, hasAccess};
