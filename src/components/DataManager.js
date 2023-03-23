@@ -1,4 +1,3 @@
-const fs = require("fs");
 const Database = require("better-sqlite3");
 const { guildId } = require("../config");
 
@@ -28,11 +27,11 @@ db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
 )`);
 
 db.exec(`CREATE TABLE IF NOT EXISTS "users" (
-	"userId"	TEXT PRIMARY KEY,
-	"name"		TEXT,
-	"oldNames"	TEXT,
+	"userId"		TEXT PRIMARY KEY,
+	"name"			TEXT,
+	"oldNames"		TEXT,
 	"bannedUntil"	INTEGER,
-	"banReason" TEXT
+	"banReason" 	TEXT
 )`);
 
 
