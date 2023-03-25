@@ -3,7 +3,7 @@ const path = require("path");
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
 const { token } = require("./config");
-const { saveData, closeDB } = require("./components/dataManager");
+const { closeDB, saveTimestamp } = require("./components/dataManager");
 
 
 process.stdin.resume();
@@ -42,9 +42,6 @@ process.stdout.write("Done!\n");
 client.login(token);
 
 
-setInterval(saveData, 60e3);
-
-
 function handleError(e) {
 	console.error(e);
 	process.exit(1);
@@ -57,10 +54,10 @@ process.on("uncaughtException", handleError)
 function handleInterrupt(code) {
 	process.removeAllListeners();
 
-	process.stdout.write("Interrupt detected, destroying client...");
+	process.stdout.write("🔴 Interrupt detected, destroying client...");
 	client.destroy();
-	process.stdout.write("Saving data...");
-	saveData();
+	process.stdout.write("Saving timestamp...");
+	saveTimestamp();
 	process.stdout.write("Closing DB...");
 	closeDB();
 	process.stdout.write(`Done! (${code})\n`);

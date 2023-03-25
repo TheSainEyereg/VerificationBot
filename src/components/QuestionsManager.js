@@ -181,7 +181,7 @@ async function startConversation(guild, user) {
 	await channel.permissionOverwrites.edit(user, {ViewChannel: true, SendMessages: true});
 
 	if (!userVerify) {
-		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60 * 1000 ,Object.keys(quizQuestions).sort(() => Math.random() - 0.5).join(","));
+		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60e3 ,Object.keys(quizQuestions).sort(() => Math.random() - 0.5).join(","));
 		await regular(channel, "Привет, добро пожаловать в систему анкетирования!", "Вам будут задано несколько простых вопросов, а затем вы пройдете верификацию от нашего модератора. Учтите, что анкета будет автоматически удалена через 48 часов! Ну что же, начнем!", {content: user.toString()});
 		await sendQuestion(channel, {question: 0, state: States.OnText});
 		return;
@@ -195,7 +195,7 @@ async function startConversation(guild, user) {
 	}
 
 	const rt = userVerify.openUntil - Date.now();
-	await regular(channel, "Упс!", `Каким-то образом канал с вашей анкетой пропал, но ничего страшного, продолжим, где остановились! Учтите, что до закрытия вашей анкеты осталось ${Math.floor(rt / (1000 * 60 * 60) % 24)}ч ${Math.floor(rt / (1000 * 60) % 60)}м.`, {content: user.toString()});
+	await regular(channel, "Упс!", `Каким-то образом канал с вашей анкетой пропал, но ничего страшного, продолжим, где остановились! Учтите, что до закрытия вашей анкеты осталось ${Math.floor(rt / (1000 * 60 * 60))}ч ${Math.floor(rt / (1000 * 60) % 60)}м.`, {content: user.toString()});
 	await sendQuestion(channel, userVerify);
 }
 
@@ -207,14 +207,13 @@ async function endConversation(guild, user) {
 	const userVerify = getVerify(user.id);
 	if (!userVerify) return;
 
-	const chanelExists = await checkForChannel(guild, userVerify.channelId);
-	if (chanelExists) {
-		await guild.channels.delete(userVerify.channelId);
-	}
-
 	deleteVerify(user.id);
 
-	if (!userVerify?.alertMessage) return; // Ну чел тип даже не дошел до верификации.
+	const chanelExists = await checkForChannel(guild, userVerify.channelId);
+	if (chanelExists) await guild.channels.delete(userVerify.channelId);
+
+
+	if (!userVerify?.messageId) return; // Ну чел тип даже не дошел до подтверждения.
 
 	/** @type {TextChannel} */
 	const answerChannel = await guild.channels.fetch(channels.answers);
@@ -273,7 +272,7 @@ async function sendForConfirmation(interaction) {
 	const answerChannel = await interaction.guild.channels.fetch(channels.answers);
 
 	const alertMessage = await answerChannel.send({
-		content: `<@&${roles.moderator}>`,
+		content: `<@&${roles.inspector}>`,
 		embeds: [
 			new EmbedBuilder({
 				color: Colors.Regular,

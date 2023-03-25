@@ -1,4 +1,4 @@
-const { rules, channels, roles } = require("../config");
+const { channels, roles } = require("../config");
 const { getRulesMessages, getRulesMessage, getVerify } = require("./dataManager");
 const { User, Interaction, Message, PermissionFlagsBits } = require("discord.js");
 const { States } = require("./enums");
@@ -12,10 +12,10 @@ const { States } = require("./enums");
 async function isUserReactedAll(user, options) {
 	if (user.id === user.client.user.id) return false;
 
+	const rulesMessages = getRulesMessages();
 	const channel = user.client.channels.cache.get(channels.rules);
 
-	for (const type of Object.keys(rules)) {
-		const id = getRulesMessage(type);
+	for (const id of Object.values(rulesMessages)) {
 		const message = channel.messages.cache.get(id);
 		const reaction = message.reactions.cache.get("✅");
 
@@ -39,12 +39,13 @@ async function isUserReactedOther(user, message, options) {
 	if (user.id === user.client.user.id) return false;
 
 	const rulesMessages = getRulesMessages();
-	const baseMessageType = Object.entries(rulesMessages).find(e => e[1] === message.id)?.[0];
+
+	const baseMessageId = Object.values(rulesMessages).find(id => id === message.id)?.[0];
+	if (!baseMessageId) return false;
 
 	const channel = user.client.channels.cache.get(channels.rules);
 
-	for (const type of Object.keys(rules).filter(e => e !== baseMessageType)) {
-		const id = getRulesMessage(type);
+	for (const id of Object.values(rulesMessages).filter(id => id !== baseMessageId)) {
 		const message = channel.messages.cache.get(id);
 		const reaction = message.reactions.cache.get("✅");
 

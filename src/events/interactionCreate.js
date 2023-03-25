@@ -1,10 +1,11 @@
 const { Events, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
 const { hasAccess } = require("../components/checkManager");
 const { findVerify, updateVerify, createUser, getVerify } = require("../components/dataManager");
+const { States } = require("../components/enums");
 const { critical, warning } = require("../components/messages");
 const { quizQuestions } = require("../components/questionsList");
 const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/questionsManager");
-const { addToWhitelist, updatePassword } = require("../components/rconManager");
+const { addToWhitelist, register } = require("../components/rconManager");
 const { roles } = require("../config");
 
 
@@ -31,7 +32,7 @@ module.exports = {
 
 					const member = await interaction.guild.members.fetch(userId);
 		
-					if (member.roles.cache.has(roles.approved)) interaction.reply({
+					if (member.roles.cache.has(roles.approved)) return interaction.reply({
 						ephemeral: true,
 						embeds: [
 							critical(null, "Вердикт уже вынесен", "Данный человек уже был верифицирован!", {embed: true})
@@ -43,11 +44,18 @@ module.exports = {
 							const DMChannel = await member.user.createDM();
 							if (DMChannel) await critical(DMChannel, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
 						} catch (e) {}
-			
+							
 						await member.ban({reason: `Заблокирован ${interaction.user.tag} через систему подачи заявок!`});
 					}
 					
 					if (interaction.customId.startsWith("approve")) {
+						if (verify.state !== States.OnConfirmation) return interaction.reply({
+							ephemeral: true,
+							embeds: [
+								critical(null, "Слишком рано", "Человек ещё не прошел процедуру верификации!", {embed: true})
+							]
+						})
+
 						try {
 							const DMChannel = await member.user.createDM();
 							if (DMChannel) await success(DMChannel, "Ваша заявка принята, добро пожаловать!");
@@ -56,7 +64,7 @@ module.exports = {
 						createUser(userId, verify.nickname);
 
 						addToWhitelist(verify.nickname);
-						updatePassword(verify.nickname, verify.tempPassword);
+						register(verify.nickname, verify.tempPassword);
 
 						await member.roles.add(roles.approved);
 					}
@@ -109,6 +117,8 @@ module.exports = {
 
 							await critical(interaction.channel, "Эй!", "Дорогой Друг,ознакомься с правилами! Можешь повторить попытку через 5 минут :)");
 							await interaction.member.timeout(5 * 60e3, "Правила не читал ¯\\_(ツ)_/¯");
+
+							return;
 						}
 
 						updateVerify(interaction.user.id, "wrongCount", verify.wrongCount);

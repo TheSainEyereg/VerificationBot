@@ -8,6 +8,6 @@ module.exports = {
 	 * @param {GuildMember} member 
 	 */
 	async execute(member) {
-		endConversation(member.guild, member.user);
+		await endConversation(member.guild, member.user);
 	}
 }

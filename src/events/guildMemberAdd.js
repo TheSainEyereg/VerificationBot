@@ -9,7 +9,7 @@ module.exports = {
 	 * @param {GuildMember} member 
 	 */
 	async execute(member) {
-		const isReactedAll = await isUserReactedAll(user);
+		const isReactedAll = await isUserReactedAll(member.user);
 	
 		if (isReactedAll) startConversation(member.guild, member.user);
 	}

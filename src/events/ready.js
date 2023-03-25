@@ -1,11 +1,12 @@
 const fs = require("fs");
 const path = require("path");
-const { Routes, REST, Events, Collection } = require("discord.js");
+const { Client, Routes, REST, Events, Collection, ActivityType } = require("discord.js");
 const { regular } = require("../components/messages");
-const { getRulesMessages, getRulesMessage, setRulesMessage, saveData, getAllVerify, saveRulesMessages } = require("../components/dataManager");
+const { getRulesMessages, getRulesMessage, setRulesMessage, saveData, getAllVerify, saveRulesMessages, getTimestamp, saveTimestamp, updateVerify } = require("../components/dataManager");
 const { endConversation, startConversation } = require("../components/questionsManager");
 const { isUserReactedOther, isUserReactedAll } = require("../components/checkManager");
 const { token, channels, rules, guildId } = require("../config");
+const { pingStatus, closeOverdue, mentionUnmuted, uncheckAll } = require("../components/actionManager");
 
 
 async function sendRuleMessage(channel, type) {
@@ -33,22 +34,27 @@ const rest = new REST({ version: "10" }).setToken(token);
 module.exports = {
 	event: Events.ClientReady,
 	once: true,
+	/**
+	 * @param {Client} client 
+	 */
 	async execute(client) {
-		console.log("Ready!");
-		client.user.setActivity("за игроками", {type: "WATCHING"});
+		console.log("🔵 Client ready!");
+
+		client.user.setActivity("за игроками", {type: ActivityType.Watching});
 	
 		const channel = client.channels.cache.get(channels.rules);
 		
+		console.log("Checking for messages:");
 		for (const type of Object.keys(rules)) {
 			try {
 				const id = getRulesMessage(type);
 				if (!id) throw 0;
 				
 				await channel.messages.fetch(id);
-				console.log(`Message "${type}" found!`);
+				console.log(` ● Message "${type}" exists!`);
 			} catch (e) {
-				console.log(`Message "${type}" not found!`);
 				await sendRuleMessage(channel, type);
+				console.log(` ● Message "${type}" sent!`);
 			}
 		}
 	
@@ -77,7 +83,47 @@ module.exports = {
 			if (isUncheckedAll) endConversation(firstRuleMessage.guild, {id: onVerifyId});
 		}
 
-		process.stdout.write("Done\n");
+		process.stdout.write("Done!\n");
+	
+
+		process.stdout.write("Checking for left users...");
+
+		const allVerify = getAllVerify();
+		
+		const guild = await client.guilds.fetch(guildId);
+		const members = await guild.members.fetch();
+
+		for (const verify of allVerify) {
+			if (!members.find(m => m.id === verify.userId)) await endConversation(guild, {id: verify.userId});
+		}
+
+		process.stdout.write("Updating remaining time...");
+
+		const latestOnline = getTimestamp();
+
+		for (const verify of allVerify) {
+			const remainingTime = verify.openUntil - latestOnline;
+			updateVerify(verify.userId, "openUntil", Date.now() + (remainingTime < 48 * 60 * 60e3 ? remainingTime : 48 * 60 * 60e3));
+		}
+
+		process.stdout.write("Starting timers...");
+
+		client.run60 = () => {
+			saveTimestamp();
+			closeOverdue(guild);
+		}
+		client.run30 = () => {
+			pingStatus(client);
+		}
+		client.run10 = () => {
+			mentionUnmuted();
+		}
+
+		client._60interval = setInterval(client.run60, 6e4); client.run60();
+		client._30interval = setInterval(client.run30, 3e4); client.run30();
+		client._10interval = setInterval(client.run10, 1e4); client.run10();
+		
+		process.stdout.write("Done!\n");
 		
 	
 		process.stdout.write("Parsing commands...");
@@ -93,6 +139,8 @@ module.exports = {
 			Routes.applicationGuildCommands(client.user.id, guildId),
 			{ body: client.commands.map(cmd => cmd.data)},
 		)
-		process.stdout.write("Done\n");
+		process.stdout.write("Done!\n");
+
+		console.log("🟢 Fully ready!");
 	}
 }

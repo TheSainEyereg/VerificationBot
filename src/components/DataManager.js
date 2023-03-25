@@ -6,7 +6,8 @@ const db = new Database("database.db");
 db.exec(`CREATE TABLE IF NOT EXISTS "settings" (
 	"guildId"		TEXT PRIMARY KEY,
 	"rulesJSON"		TEXT,
-	"categories"	TEXT
+	"categories"	TEXT,
+	"timestamp"		INTEGER
 )`);
 db.prepare("INSERT OR IGNORE INTO settings(guildId) VALUES(?)").run(guildId);
 
@@ -81,6 +82,17 @@ function addCategory(id) {
 function deleteCategory(id) {
 	cache.categories.splice(cache.categories.indexOf(id), 1);
 	db.prepare("UPDATE settings SET categories = ? WHERE guildId = ?").run(cache.categories.join(","), guildId);
+}
+
+/**
+ * @returns {number}
+ */
+function getTimestamp() {
+	return db.prepare("SELECT timestamp FROM settings WHERE guildId = ?").get(guildId)?.timestamp || 0;
+}
+
+function saveTimestamp() {
+	db.prepare("UPDATE settings SET timestamp = ? WHERE guildId = ?").run(Date.now(), guildId);
 }
 
 
@@ -166,15 +178,12 @@ function deleteUser(id) {
 	return db.prepare("DELETE FROM users WHERE userId = ?").run(id);
 }
 
-
-function saveData() {}
-
 function closeDB() {
 	db.close();
 }
 
 module.exports = {
-	saveData,
+	getTimestamp, saveTimestamp,
 	getRulesMessages, getRulesMessage, setRulesMessage,
 	getCategories, addCategory, deleteCategory,
 	getAllVerify, getVerify, findVerify, createVerify, updateVerify, deleteVerify,
