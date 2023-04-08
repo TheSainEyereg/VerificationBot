@@ -28,7 +28,7 @@ module.exports =  {
 
 		const answers = interaction.options.getBoolean("answers");
 
-		if (answers && !hasAccess(interaction, "inspector"))  return interaction.reply({
+		if (answers && !hasAccess(interaction.member, "inspector")) return interaction.reply({
 			ephemeral: true,
 			embeds: [
 				warning(null, "Нет прав!", "Для получения ответов на анкету пользователя нужно быть проверяющим.", {embed: true})

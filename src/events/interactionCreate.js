@@ -19,7 +19,7 @@ module.exports = {
 	async execute(interaction) {
 		if (interaction.isButton()) {
 			if (interaction.customId.startsWith("reject") || interaction.customId.startsWith("approve")) {
-				if (!hasAccess(interaction, "inspector")) return interaction.reply({
+				if (!hasAccess(interaction.member, "inspector")) return interaction.reply({
 					ephemeral: true,
 					embeds: [
 						warning(null, "Ошибка доступа!", "Данные кнопки только для проверяющих!", {embed: true})
@@ -231,7 +231,7 @@ module.exports = {
 			const command = interaction.client.commands.get(interaction.commandName);
 			if (!command) return;
 			
-			if (!hasAccess(interaction, command.access)) return interaction.reply({
+			if (!hasAccess(interaction.member, command.access)) return interaction.reply({
 				ephemeral: true,
 				embeds: [
 					warning(null, "Нет доступа к команде!", "Данная команда недоступна для вас!", {embed: true})
