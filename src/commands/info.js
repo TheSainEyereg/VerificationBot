@@ -1,6 +1,8 @@
 const { Interaction, EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 const { Colors } = require("../components/constants");
 const { getUser } = require("../components/dataManager");
+const { warning } = require("../components/messages");
+const { hasAccess } = require("../components/checkManager");
 
 module.exports =  {
 	data: new SlashCommandBuilder().setName("info").setDescription("Получает дату регистрации пользователя Discord.").addUserOption(option =>
@@ -8,6 +10,11 @@ module.exports =  {
 			.setName("target")
 			.setDescription("Пользователь")
 			.setRequired(true)
+	).addBooleanOption(option =>
+		option
+			.setName("answers")
+			.setDescription("Получить ответы при прохождении анкеты")
+			.setRequired(false)
 	),
 	access: "user",
 	/**
@@ -19,9 +26,26 @@ module.exports =  {
 		
 		const member = interaction.options.getMember("target");
 
+		const answers = interaction.options.getBoolean("answers");
+
+		if (answers && !hasAccess(interaction, "inspector"))  return interaction.reply({
+			ephemeral: true,
+			embeds: [
+				warning(null, "Нет прав!", "Для получения ответов на анкету пользователя нужно быть проверяющим.", {embed: true})
+			]
+		});
+
 		const possibleUser = getUser(member.id);
 
+		if (!possibleUser?.answers && answers) return interaction.reply({
+			ephemeral: true,
+			embeds: [
+				warning(null, "Ответы не найдены", "Для данного человека не сохранены ответы на анкету.", {embed: true})
+			]
+		});
+
 		interaction.reply({
+			ephemeral: true,
 			embeds: [
 				new EmbedBuilder({
 					color: Colors.Regular,
@@ -69,7 +93,13 @@ module.exports =  {
 						}
 					]
 				})
-			]
+			],
+			... answers && {
+				files: [{
+					name: "Ответы.txt",
+					attachment: Buffer.from(JSON.parse(possibleUser.answers).map(qa => `Вопрос: ${qa.q}\nОтвет: ${qa.a}\n\n`).join(""))
+				}]
+			}
 		});
 	}
 };
