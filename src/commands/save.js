@@ -31,10 +31,10 @@ module.exports = {
 		});
 
 		const potentialUser = getUser(interaction.user.id);
-		if (potentialUser && potentialUser.name) return interaction.reply({
+		if (potentialUser) return interaction.reply({
 			ephemeral: true,
 			embeds: [
-				warning(null, "Вы и ваш ник уже есть в базе данных!", "Данная команда только для тех, кто имеет роль подтвержденного игрока и не имеет привязки к никнейму в игре!", {embed: true})
+				success(null, "Вы и ваш ник уже есть в базе данных!", `Данная команда только для тех, кто имеет роль подтвержденного игрока и не имеет привязки к никнейму в игре!\nВаш ник: \`${potentialUser.name}\``, {embed: true})
 			]
 		});
 
