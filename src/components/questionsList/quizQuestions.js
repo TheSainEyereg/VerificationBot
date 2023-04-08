@@ -1,12 +1,12 @@
 /**
- * @typedef {Object} quizQuestions
+ * @typedef {Object} QuizQuestion
  * @property {String} message
  * @property {String} [image]
  * @property {String[]} answers
  * @property {String[]} correct
  */
 
-/** @type {quizQuestions[]} */
+/** @type {QuizQuestion[]} */
 const questions = [
 	{
 		message: "Вы увидели нарушителя правил который нарушает правила при вас, ваши действия?",
@@ -36,7 +36,7 @@ const questions = [
 		correct: [0,2]
 	},
 	{
-		message: "Вы увидели брошенную территорию, ваши действия?",
+		message: "Вы увидели брошенную территорию c табличкой на ней, ваши действия?",
 		answers: [
 			"Присвоить территорию себе, и забрать ресурсы", //0
 			"Обговорить присвоение территорий себе с владельцем терры", //1 +
@@ -73,7 +73,7 @@ const questions = [
 	},
 	{
 		message: "Вы нечаянно убили игрока, ваши действия?",
-		image: "https://storage.chunky.fun/images/20.png",
+		// image: "https://storage.chunky.fun/images/20.png",
 		answers: [
 			"Извинюсь, и отдам ресурсы", //0 +
 			"Сообщу модератору/администратору об убийстве ", //1 +

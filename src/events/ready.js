@@ -4,9 +4,9 @@ const { Client, Routes, REST, Events, Collection, ActivityType } = require("disc
 const { regular } = require("../components/messages");
 const { getRulesMessages, getRulesMessage, setRulesMessage, saveData, getAllVerify, saveRulesMessages, getTimestamp, saveTimestamp, updateVerify } = require("../components/dataManager");
 const { endConversation, startConversation } = require("../components/questionsManager");
-const { isUserReactedOther, isUserReactedAll } = require("../components/checkManager");
+const { isUserReactedOther, isUserReactedAll, unreactAll } = require("../components/reactionsManager");
 const { token, channels, rules, guildId } = require("../config");
-const { pingStatus, closeOverdue, mentionUnmuted, uncheckAll } = require("../components/actionManager");
+const { pingStatus, closeOverdue, mentionUnmuted } = require("../components/actionManager");
 
 
 async function sendRuleMessage(channel, type) {
@@ -80,7 +80,7 @@ module.exports = {
 		for (const onVerifyId of getAllVerify().map(v => v.userId)) {
 			const isUncheckedAll = await isUserReactedAll({id: onVerifyId, client}, {unchecked: true});
 			
-			if (isUncheckedAll) endConversation(firstRuleMessage.guild, {id: onVerifyId});
+			if (isUncheckedAll) endConversation(firstRuleMessage.guild, {id: onVerifyId, client});
 		}
 
 		process.stdout.write("Done!\n");
@@ -94,7 +94,10 @@ module.exports = {
 		const members = await guild.members.fetch();
 
 		for (const verify of allVerify) {
-			if (!members.find(m => m.id === verify.userId)) await endConversation(guild, {id: verify.userId});
+			if (!members.find(m => m.id === verify.userId)){
+				await endConversation(guild, {id: verify.userId});
+				unreactAll({id: verify.userId, client});
+			}
 		}
 
 		process.stdout.write("Updating remaining time...");
@@ -116,7 +119,7 @@ module.exports = {
 			pingStatus(client);
 		}
 		client.run10 = () => {
-			mentionUnmuted();
+			mentionUnmuted(guild);
 		}
 
 		client._60interval = setInterval(client.run60, 6e4); client.run60();

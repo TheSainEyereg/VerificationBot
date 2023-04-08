@@ -1,32 +1,15 @@
 const fetch = require("node-fetch");
-const { kumaPushURL } = require("../config");
-const { States } = require("./enums");
-const { endConversation } = require("./questionsManager");
-const { Guild, User } = require("discord.js");
-const { channels } = require("../config");
-const { getAllVerify, getRulesMessages } = require("./dataManager");
-const { warning } = require("./messages");
+const { kumaPushURL, settings } = require("../config");
+const { States } = require("./constants");
+const { endConversation, checkForChannel } = require("./questionsManager");
+const { Guild } = require("discord.js");
+const { getAllVerify, getUser, getUserByName, findVerify, updateUserName, updateVerify } = require("./dataManager");
+const { warning, success } = require("./messages");
+const { unreactAll } = require("./reactionsManager");
+const { removeFromWhitelist, addToWhitelist, getWhitelist } = require("./rconManager");
 
 
 function syncWhitelist() {}
-
-/**
- * @param {User} user 
- */
-async function uncheckAll(user) {
-	const rulesMessages = getRulesMessages();
-
-	const channel = user.client.channels.cache.get(channels.rules);
-
-	for (const id of Object.values(rulesMessages)) {
-		const message = channel.messages.cache.get(id);
-		const reaction = message.reactions.cache.get("✅");
-		
-		try {
-			await reaction.users.remove(user.id);
-		} catch(e) {}
-	}
-}
 
 /**
  * @param {Guild} guild 
@@ -44,18 +27,65 @@ async function closeOverdue(guild) {
 			} catch (e) {}
 
 			await endConversation(guild, user);
-			await uncheckAll(user);
+			await unreactAll(user);
 		}
 	}
 
 } // 
 
 
+
+function freeUserName(name) {
+	const foundUser = getUserByName(name);
+	if (foundUser && foundUser.name === name) updateUserName(foundUser.id, null, false);
+
+	const foundVerify = findVerify("nickname", name);
+	if (foundVerify) return false;
+
+	removeFromWhitelist(name);
+
+	return true;
+}
+
+
+function setUserName(id, name, force = false) {
+	// No cache because is not common option
+	const nicknameExists = !!(
+		getUserByName(name) ||
+		findVerify("nickname", name) ||
+		!settings.replaceWhitelist && getWhitelist().includes(name)
+	);
+
+	if (nicknameExists && (!force || !freeUserName(name))) return false;
+
+	updateUserName(id, name);
+
+	addToWhitelist(name);
+
+	return true;
+}
+
+
+
 /**
  * @param {Guild} guild 
  */
-function mentionUnmuted(guild) {
+async function mentionUnmuted(guild) {
+	const allVerify = getAllVerify();
+	const date = Date.now();
 
+	for (const verify of allVerify) {
+		if (!verify.mutedUntil || date < verify.mutedUntil) continue;
+
+		updateVerify(verify.userId, "mutedUntil", null);
+
+		const channelExists = await checkForChannel(guild, verify.channelId);
+		if (!channelExists) continue;
+
+		const channel = await guild.channels.fetch(verify.channelId);
+
+		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`});
+	}
 } // Date.now() > verify.mutedUntil
 
 
@@ -71,4 +101,8 @@ function pingStatus(client) {
 	fetch(`${kumaPushURL}&ping=${client.ws.ping}`).catch();
 }
 
-module.exports = { pingStatus, syncWhitelist, uncheckAll, closeOverdue, mentionUnmuted, mentionUbanned }
+module.exports = {
+	pingStatus, syncWhitelist,
+	freeUserName, setUserName,
+	closeOverdue, mentionUnmuted, mentionUbanned
+}

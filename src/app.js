@@ -4,6 +4,7 @@ const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
 const { token } = require("./config");
 const { closeDB, saveTimestamp } = require("./components/dataManager");
+const { getWhitelist, closeRcon } = require("./components/rconManager");
 
 
 process.stdin.resume();
@@ -58,14 +59,14 @@ function handleInterrupt(code) {
 	client.destroy();
 	process.stdout.write("Saving timestamp...");
 	saveTimestamp();
-	process.stdout.write("Closing DB...");
-	closeDB();
+	process.stdout.write("Closing rcon...");
+	closeRcon();
 	process.stdout.write(`Done! (${code})\n`);
 
 	process.exit(code);
 }
 
-process.on("exit", handleInterrupt);
-process.on("SIGINT", handleInterrupt);
-process.on("SIGUSR1", handleInterrupt);
-process.on("SIGUSR2", handleInterrupt);
+process.once("exit", handleInterrupt);
+process.once("SIGINT", handleInterrupt);
+process.once("SIGUSR1", handleInterrupt);
+process.once("SIGUSR2", handleInterrupt);

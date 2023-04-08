@@ -15,4 +15,11 @@ const States = {
 	OnConfirmation: 3
 };
 
-module.exports = { Colors, States }
+const RegExps = {
+	Number: /[0-9]+/g,
+	MinecraftName: /[a-zA-Z0-9_]{2,16}/g,
+	MinecraftNameString: /^[a-zA-Z0-9_]{2,16}$/,
+	Password: /^[!-~]*$/
+}
+
+module.exports = { Colors, States, RegExps }

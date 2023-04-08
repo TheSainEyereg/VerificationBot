@@ -1,5 +1,5 @@
 const {ColorResolvable, EmbedBuilder, Message, TextChannel} = require("discord.js");
-const { Colors } = require("./enums");
+const { Colors } = require("./constants");
 
 /**
  * Regular message

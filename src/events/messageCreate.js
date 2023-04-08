@@ -4,7 +4,7 @@ const { critical, regular } = require("../components/messages");
 const { endConversation, sendForConfirmation, sendQuestion, sendForQuiz } = require("../components/questionsManager");
 const { textQuestions } = require("../components/questionsList");
 const { roles } = require("../config");
-const { States } = require("../components/enums");
+const { States } = require("../components/constants");
 
 
 module.exports = {

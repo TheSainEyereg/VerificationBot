@@ -3,7 +3,7 @@ const { channels, roles } = require("../config");
 const { deleteAnswers, deleteVerify, getAnswers, getCategories, getVerify, addCategory, createVerify, deleteCategory, updateVerify } = require("./dataManager");
 const { textQuestions, quizQuestions } = require("./questionsList");
 const { regular, success, warning } = require("./messages");
-const { States, Colors } = require("./enums");
+const { States, Colors } = require("./constants");
 
 /**
  * @param {Guild} guild 
@@ -77,7 +77,7 @@ async function sendQuestion(channel, verify) {
 		const question = textQuestions[verify.question];
 		await regular(
 			channel,
-			verify.question === 0 ? "Первый вопрос" : verify.question === textQuestions.length-1 ? "Последний вопрос" : "Вопрос " + (verify.question+1),
+			verify.question === 0 ? "Первый вопрос" : verify.question === textQuestions.length-1 ? "Последний вопрос" : `Вопрос ${(verify.question+1)} из ${textQuestions.length}`,
 			question.message,
 			{image: question.image}
 		);
@@ -105,7 +105,7 @@ async function sendQuestion(channel, verify) {
 			embeds: [
 				regular(
 					null,
-					verify.question === 0 ? "Первый вопрос теста" : verify.question === quizQuestions.length-1 ? "Последний вопрос теста" : "Тестовый вопрос " + (verify.question+1),
+					verify.question === 0 ? "Первый вопрос теста" : verify.question === quizQuestions.length-1 ? "Последний вопрос теста" : `Вопрос ${(verify.question+1)} из ${quizQuestions.length} `,
 					question.message,
 					{image: question.image, embed: true}
 				)
@@ -325,9 +325,7 @@ async function sendForConfirmation(interaction) {
 				]
 			}),
 		]
-	})
-
-	deleteAnswers(interaction.user.id);
+	});
 
 	updateVerify(interaction.user.id, "messageId", alertMessage.id);
 	updateVerify(interaction.user.id, "state", States.OnConfirmation);
@@ -336,4 +334,4 @@ async function sendForConfirmation(interaction) {
 }
 
 
-module.exports = {sendQuestion, startConversation, sendForQuiz, askForPassword, sendForConfirmation, endConversation};
+module.exports = {checkForChannel, sendQuestion, startConversation, sendForQuiz, askForPassword, sendForConfirmation, endConversation};

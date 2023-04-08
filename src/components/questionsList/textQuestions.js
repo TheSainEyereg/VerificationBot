@@ -1,11 +1,12 @@
 const { Message } = require("discord.js");
 const { settings } = require("../../config");
-const { updateVerify } = require("../dataManager");
-const { States } = require("../enums");
+const { updateVerify, findVerify, getUserByName } = require("../dataManager");
+const { States, RegExps } = require("../constants");
 const { warning, critical } = require("../messages");
+const { getWhitelist } = require("../rconManager");
 
-const yesAnswer = ["да", "конечно", "ес", "есс", "естественно", "кнчн", "а как же", "конечно же", "yes", "right", "true", "ну да", "дэм", "нуда", "+", "1"];
-const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "ноу", "-", "0", "секрет"];
+const yesAnswer = ["да", "конечно", "ес", "есс", "естественно", "кнчн", "а как же", "конечно же", "yes", "right", "true", "ну да", "дэм", "нуда", "+", "1", "y", "ye", "yep",];
+const noAnswer = ["нет", "никогда", "no", "false", "неа", "не", "ноу", "-", "0", "секрет", "n", "nope"];
 
 /**
  * 
@@ -22,18 +23,18 @@ const findInArray = (text, array) => !! text.split(" ").find(w => array.includes
  */
 
 /**
- * @typedef {Object} textQuestion
+ * @typedef {Object} TextQuestion
  * @property {String} message
  * @property {String} [image]
  * @property {AnswerCallback} answer
  */
 
-/** @type {textQuestion[]} */
+/** @type {TextQuestion[]} */
 const questions = [
 	{
 		message: "Сколько вам лет?",
 		async answer(message) {
-			const number = message.content.match(/[0-9]+/g)?.[0];
+			const number = message.content.match(RegExps.Number)?.[0];
 			if (isNaN(number)) {
 				await warning(message, "Вы должны написать хоть одно число в вашем сообщении!")
 				return false;
@@ -56,12 +57,24 @@ const questions = [
 	{
 		message: "Какой ваш ник в Minecraft?",
 		async answer(message) {
-			const matches = /^[a-zA-Z0-9_]{2,16}$/mg.test(message.content);
+			const matches = RegExps.MinecraftNameString.test(message.content);
 			if (!matches) {
 				await warning(message, "Неверный формат!", "Ваш ник не соответствует формату, убедитесь, что вы ввели его правильно!");
 				return false;
 			}
-			updateVerify(message.author.id, "nickname", message.content)
+
+			const nicknameExists = !!(
+				getUserByName(message.content) ||
+				findVerify("nickname", message.content) ||
+				!settings.replaceWhitelist && (await getWhitelist()).includes(message.content)
+			);
+
+			if (nicknameExists) {
+				await warning(message, "Ник занят!", "Человек с подобным никнеймом уже был зарегистрирован на сервере ранее! Если этот ник принадлежит вам, то не переживайте и откройте тикет.");
+				return false;
+			}
+
+			updateVerify(message.author.id, "nickname", message.content);
 			await message.channel.edit({name: message.content});
 
 			try {
@@ -75,7 +88,7 @@ const questions = [
 	{
 		message: "Сколько вы играете в Minecraft? С какой версии?",
 		async answer(message) {
-			if (!message.content.match(/[0-9]/g)?.length) {
+			if (!message.content.match(RegExps.Number)?.length) {
 				await warning(message, "Вы должны написать хоть одно число в вашем сообщении!")
 				return false;
 			}

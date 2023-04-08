@@ -1,5 +1,6 @@
 const Database = require("better-sqlite3");
 const { guildId } = require("../config");
+const { RegExps } = require("./constants");
 
 const db = new Database("database.db");
 
@@ -32,7 +33,8 @@ db.exec(`CREATE TABLE IF NOT EXISTS "users" (
 	"name"			TEXT,
 	"oldNames"		TEXT,
 	"bannedUntil"	INTEGER,
-	"banReason" 	TEXT
+	"banReason" 	TEXT,
+	"answers" 	TEXT
 )`);
 
 
@@ -65,7 +67,7 @@ function getCategories() {
 	if (!cache.categories) {
 		try {
 			const res = db.prepare("SELECT categories FROM settings WHERE guildId = ?").get(guildId);
-			return cache.categories = res.categories.match(/[0-9]+/g) || []; // It should crash when no categories property but if something go wrong we'll get [] instead of null
+			return cache.categories = res.categories.match(RegExps.Number) || []; // It should crash when no categories property but if something go wrong we'll get [] instead of null
 		} catch (e) {};
 
 		return cache.categories = []
@@ -121,6 +123,19 @@ function deleteVerify(id) {
 	return db.prepare("DELETE FROM verify WHERE userId = ?").run(id);
 }
 
+function getAnswers(id) {
+	if (!cache["answers"+id]) {
+		try {
+			const res = db.prepare("SELECT answers FROM verify WHERE userId = ?").get(id);
+			return cache["answers"+id] = JSON.parse(res.answers) || [];
+		} catch (e) {}
+
+		return cache["answers"+id] = [];
+	}
+
+	return cache["answers"+id];
+}
+
 /**
  * 
  * @param {String} id - ID 
@@ -133,19 +148,6 @@ function addAnswer(id, q, a) {
 	answers.push({q, a});
 	
 	updateVerify(id, "answers", JSON.stringify(answers));
-}
-
-function getAnswers(id) {
-	if (!cache["answers"+id]) {
-		try {
-			const res = db.prepare("SELECT answers FROM verify WHERE userId = ?").get(id);
-			return cache["answers"+id] = JSON.parse(res.answers) || [];
-		} catch (e) {}
-
-		return cache["answers"+id] = [];
-	}
-
-	return cache["answers"+id];
 }
 
 function deleteAnswers(id) {
@@ -162,12 +164,23 @@ function getUser(id) {
 	return db.prepare("SELECT * FROM users WHERE userId = ?").get(id);
 }
 
-function createUser(id, name) {
-	db.prepare("INSERT OR IGNORE INTO users(userId, name) VALUES(?, ?)").run(id, name);
+function getUserByName(name) {
+	return db.prepare(`SELECT * FROM users WHERE name = ? OR INSTR(oldNames, ?) > 0`).get(name, name);
 }
 
-function getUserByName(name) {
-	return db.prepare(`SELECT * FROM users WHERE name = ?`).get(name);
+function createUser(id, name, answers) {
+	db.prepare("INSERT OR IGNORE INTO users(userId, name, answers) VALUES(?, ?, ?)").run(id, name, answers);
+}
+
+function updateUserName(id, name, save = true) {
+	const user = getUser(id);
+
+	if (!user) throw new Error("User not found");
+
+	const oldNames = (user.oldNames.match(RegExps.MinecraftName) || []);
+	save && user.name.test(RegExps.MinecraftName) && oldNames.push(user.name);
+
+	db.prepare(`UPDATE users SET name = ?, oldNames = ? WHERE userId = ?`).run(name, oldNames.join(","), id);
 }
 
 function updateUser(id, item, value) {
@@ -188,6 +201,6 @@ module.exports = {
 	getCategories, addCategory, deleteCategory,
 	getAllVerify, getVerify, findVerify, createVerify, updateVerify, deleteVerify,
 	addAnswer, getAnswers, deleteAnswers,
-	getAllUsers, getUser, getUserByName, createUser, updateUser, deleteUser,
+	getAllUsers, getUser, getUserByName, createUser, updateUser, updateUserName, deleteUser,
 	closeDB
 };

@@ -1,5 +1,5 @@
 const { Events } = require("discord.js");
-const { isUserReactedOther } = require("../components/CheckManager");
+const { isUserReactedOther } = require("../components/reactionsManager");
 const { startConversation } = require("../components/QuestionsManager");
 
 

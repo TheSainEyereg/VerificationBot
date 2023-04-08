@@ -132,4 +132,4 @@ config*.js
 
 # bot data
 *.db
-rules
+assets

@@ -1,7 +1,7 @@
 const { Events, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
 const { hasAccess } = require("../components/checkManager");
 const { findVerify, updateVerify, createUser, getVerify } = require("../components/dataManager");
-const { States } = require("../components/enums");
+const { States, RegExps } = require("../components/constants");
 const { critical, warning } = require("../components/messages");
 const { quizQuestions } = require("../components/questionsList");
 const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/questionsManager");
@@ -26,7 +26,7 @@ module.exports = {
 					]
 				})
 				try {
-					const userId = interaction.customId.match(/[0-9]+/g)?.[0];
+					const userId = interaction.customId.match(RegExps.Number)?.[0];
 
 					const verify = getVerify(userId);
 
@@ -61,10 +61,10 @@ module.exports = {
 							if (DMChannel) await success(DMChannel, "Ваша заявка принята, добро пожаловать!");
 						} catch (e) {}
 			
-						createUser(userId, verify.nickname);
+						createUser(userId, verify.nickname, verify.answers);
 
-						addToWhitelist(verify.nickname);
-						register(verify.nickname, verify.tempPassword);
+						await addToWhitelist(verify.nickname);
+						await register(verify.nickname, verify.tempPassword);
 
 						await member.roles.add(roles.approved);
 					}
@@ -95,7 +95,7 @@ module.exports = {
 
 					await interaction.deferUpdate();
 
-					const quizAnswer = interaction.customId.match(/[0-9]+/g)?.[0];
+					const quizAnswer = interaction.customId.match(RegExps.Number)?.[0];
 					
 					const quizOrder = verify.quizOrder.split(",");
 					const answerOrder = verify.quizAnswerOrder.split(",");
@@ -202,7 +202,7 @@ module.exports = {
 
 				const password = interaction.fields.getTextInputValue("password");
 				
-				if (!/[!-~]*/.test(password)) return interaction.reply({
+				if (!RegExps.Password.test(password)) return interaction.reply({
 					ephemeral: true,
 					embeds: [
 						warning(null, "Недопустимые символы!", "Пароль содержит символы, которые не могут быть использованы в пароле! Попробуйте ещё раз!", {embed: true})
