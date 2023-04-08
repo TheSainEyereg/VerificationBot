@@ -1,6 +1,6 @@
 const { Interaction, ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require("discord.js");
 const { findVerify } = require("../components/dataManager.js");
-const { question, warning } = require("../components/Messages.js");
+const { question, warning } = require("../components/messages.js");
 
 module.exports =  {
 	data: new SlashCommandBuilder().setName("approve").setDescription("Подтверждает пользователя из этого канала."),

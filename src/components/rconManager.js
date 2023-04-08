@@ -1,7 +1,7 @@
 const { Rcon } = require("rcon-client");
 const { rcon, settings } = require("../config");
 const { RegExps } = require("./constants");
-const fs = require("fs");;
+const fs = require("fs");
 
 /** @type {Map.<String, Rcon>} */
 const servers = new Map();

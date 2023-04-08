@@ -3,8 +3,8 @@ const path = require("path");
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
 const { token } = require("./config");
-const { closeDB, saveTimestamp } = require("./components/dataManager");
-const { getWhitelist, closeRcon } = require("./components/rconManager");
+const { saveTimestamp } = require("./components/dataManager");
+const { closeRcon } = require("./components/rconManager");
 
 
 process.stdin.resume();

@@ -1,6 +1,6 @@
 const { Events } = require("discord.js");
 const { findVerify } = require("../components/dataManager");
-const { startConversation } = require("../components/QuestionsManager");
+const { startConversation } = require("../components/questionsManager");
 
 
 module.exports = {
