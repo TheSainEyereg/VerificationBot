@@ -94,7 +94,7 @@ async function mentionUnmuted(guild) {
  */
 function mentionUbanned(guild) {
 
-} // Date.now() > user.bannedUntil
+} // Date.now() > user.banUntil
 
 
 function pingStatus(client) {

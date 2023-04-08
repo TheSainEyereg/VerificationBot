@@ -32,7 +32,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS "users" (
 	"userId"		TEXT PRIMARY KEY,
 	"name"			TEXT,
 	"oldNames"		TEXT,
-	"bannedUntil"	INTEGER,
+	"banUntil"	INTEGER,
 	"banReason" 	TEXT,
 	"answers" 	TEXT
 )`);
