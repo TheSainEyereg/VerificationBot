@@ -132,4 +132,5 @@ config*.js
 
 # bot data
 *.db
+*.db-journal
 assets
