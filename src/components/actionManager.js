@@ -35,32 +35,35 @@ async function closeOverdue(guild) {
 
 
 
-function freeUserName(name) {
+async function freeUserName(name) {
 	const foundUser = getUserByName(name);
 	if (foundUser && foundUser.name === name) updateUserName(foundUser.id, null, false);
 
 	const foundVerify = findVerify("nickname", name);
 	if (foundVerify) return false;
 
-	removeFromWhitelist(name);
+	await removeFromWhitelist(name);
 
 	return true;
 }
 
 
-function setUserName(id, name, force = false) {
+async function changeUserName(id, name, force = false) {
 	// No cache because is not common option
+	const possibleUser = getUserByName(name);
+	const possibleVerify = findVerify("nickname", name);
+
 	const nicknameExists = !!(
-		getUserByName(name) ||
-		findVerify("nickname", name) ||
-		!settings.replaceWhitelist && getWhitelist().includes(name)
+		possibleUser && possibleUser.userId !== id ||
+		possibleVerify && possibleVerify.userId !== id ||
+		!settings.replaceWhitelist && (await getWhitelist()).includes(name)
 	);
 
-	if (nicknameExists && (!force || !freeUserName(name))) return false;
+	if (nicknameExists && (!force || !(await freeUserName(name)))) return false;
 
 	updateUserName(id, name);
 
-	addToWhitelist(name);
+	await addToWhitelist(name);
 
 	return true;
 }
@@ -103,6 +106,6 @@ function pingStatus(client) {
 
 module.exports = {
 	pingStatus, syncWhitelist,
-	freeUserName, setUserName,
+	freeUserName, changeUserName,
 	closeOverdue, mentionUnmuted, mentionUbanned
 }

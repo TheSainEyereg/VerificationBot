@@ -26,7 +26,7 @@ for (const [name, config] of Object.entries(rcon.servers)) servers.set(name, new
 /**
  * @param {Array.<String>} serverNames
  * @param {String} command
- * @returns {Result}
+ * @returns {Promise<Result>}
  */
 async function runCommand(serverNames, command) {
 	const serverList = serverNames.map(name => ({name, server: servers.get(name)}));
