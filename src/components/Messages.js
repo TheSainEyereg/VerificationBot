@@ -21,7 +21,7 @@ function regular(source, title, description, opt) {
 	description && embed.setDescription(description);
 	opt?.image && embed.setImage(opt.image);
 	if (opt?.embed) return embed;
-	return channel.send(Object.assign({embeds: [embed]}, opt?.content && {content: opt.content}, ));
+	return channel.send(Object.assign({embeds: [embed]}, opt?.content && {content: opt.content}, )).catch(() => {});
 }
 /**
  * Message with a link
@@ -35,6 +35,7 @@ function regular(source, title, description, opt) {
  * @returns Promise<Message> | Embed
  */
 function url(source, url, text, opt) {
+	/** @type {TextChannel} */
 	const channel = source.channel || source;
 	const embed = new EmbedBuilder({
 		color: Colors.Url,
@@ -42,7 +43,7 @@ function url(source, url, text, opt) {
 		url
 	});
 	if (opt?.embed) return embed;
-	return channel.send({embeds: [embed]});
+	return channel.send({embeds: [embed]}).catch(() => {});
 }
 
 /**

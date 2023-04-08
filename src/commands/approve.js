@@ -1,5 +1,5 @@
 const { Interaction, ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require("discord.js");
-const { getAllVerify, findVerify } = require("../components/DataManager.js");
+const { findVerify } = require("../components/dataManager.js");
 const { question, warning } = require("../components/Messages.js");
 
 module.exports =  {
