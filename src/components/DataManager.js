@@ -177,8 +177,8 @@ function updateUserName(id, name, save = true) {
 
 	if (!user) throw new Error("User not found");
 
-	const oldNames = (user.oldNames.match(RegExps.MinecraftName) || []);
-	save && user.name.test(RegExps.MinecraftName) && oldNames.push(user.name);
+	const oldNames = (user.oldNames?.match(RegExps.MinecraftName) || []).filter(n => n !== name);
+	save && RegExps.MinecraftName.test(user.name) && oldNames.push(user.name);
 
 	db.prepare(`UPDATE users SET name = ?, oldNames = ? WHERE userId = ?`).run(name, oldNames.join(","), id);
 }
