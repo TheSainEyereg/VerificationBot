@@ -53,7 +53,7 @@ module.exports = {
 			if (!RegExps.Password.test(password)) return interaction.reply({
 				ephemeral: true,
 				embeds: [
-					warning(null, "Недопустимые символы!", "Пароль содержит символы, которые не могут быть использованы в пароле!", {embed: true})
+					warning(null, "Недопустимые символы!", "Пароль содержит символы, которые не могут быть использованы в пароле либо не соответствует длине 10-30!", {embed: true})
 				]
 			});
 
