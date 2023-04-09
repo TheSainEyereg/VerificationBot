@@ -111,24 +111,31 @@ module.exports = {
 
 		process.stdout.write("Starting timers...");
 
+		client.run600 = () => {};
+		client.run300 = () => {};
 		client.run60 = () => {
 			saveTimestamp();
 			closeOverdue(guild);
-		}
+		};
 		client.run30 = () => {
 			pingStatus(client);
-		}
+		};
 		client.run10 = () => {
 			mentionUnmuted(guild);
-		}
+		};
 
+		client._600interval = setInterval(client.run600, 60e4); client.run600();
+		client._300interval = setInterval(client.run300, 30e4); client.run300();
 		client._60interval = setInterval(client.run60, 6e4); client.run60();
 		client._30interval = setInterval(client.run30, 3e4); client.run30();
 		client._10interval = setInterval(client.run10, 1e4); client.run10();
 		
 		process.stdout.write("Done!\n");
 		
-	
+		process.stdout.write("Cleaning up commands...");
+		await guild.commands.set([]);
+		await client.application.commands.set([]);
+
 		process.stdout.write("Parsing commands...");
 		client.commands = new Collection();
 		const commandsPath = path.join(__dirname, "..", "commands");
@@ -137,11 +144,9 @@ module.exports = {
 			const command = require(filePath);
 			client.commands.set(command.data.name, command);
 		}
-		process.stdout.write("Registering slash commands...");
-		await rest.put(
-			Routes.applicationGuildCommands(client.user.id, guildId),
-			{ body: client.commands.map(cmd => cmd.data)},
-		)
+
+		process.stdout.write("Registering commands...");
+		await guild.commands.set(client.commands.map(cmd => cmd.data));
 		process.stdout.write("Done!\n");
 
 		console.log("🟢 Fully ready!");
