@@ -84,9 +84,6 @@ async function sendQuestion(channel, verify) {
 	}
 
 	if (verify.state === States.OnQuiz) {
-		// Fucking mess
-		const textAnswersCount = getAnswers(verify.userId).length;
-
 		const quizOrder = verify.quizOrder.split(",");
 
 		const question = quizQuestions[quizOrder[verify.question]];
@@ -108,7 +105,7 @@ async function sendQuestion(channel, verify) {
 			embeds: [ 
 				regular(
 					null,
-					verify.question === quizQuestions.length-1 ? "Последний вопрос" : `Вопрос ${(verify.question + textAnswersCount + 1)}`,
+					verify.question === quizQuestions.length-1 ? "Последний вопрос" : `Вопрос ${(verify.question + textQuestions.length + 1)}`,
 					question.message,
 					{image: question.image, embed: true}
 				)
