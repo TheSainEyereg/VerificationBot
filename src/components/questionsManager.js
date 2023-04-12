@@ -77,13 +77,16 @@ async function sendQuestion(channel, verify) {
 		const question = textQuestions[verify.question];
 		await regular(
 			channel,
-			verify.question === 0 ? "Первый вопрос" : verify.question === textQuestions.length-1 ? "Последний вопрос" : `Вопрос ${(verify.question+1)} из ${textQuestions.length}`,
+			`Вопрос ${(verify.question+1)}`,
 			question.message,
 			{image: question.image}
 		);
 	}
 
 	if (verify.state === States.OnQuiz) {
+		// Fucking mess
+		const textAnswersCount = getAnswers(verify.userId).length;
+
 		const quizOrder = verify.quizOrder.split(",");
 
 		const question = quizQuestions[quizOrder[verify.question]];
@@ -102,10 +105,10 @@ async function sendQuestion(channel, verify) {
 		}
 
 		await channel.send({
-			embeds: [
+			embeds: [ 
 				regular(
 					null,
-					verify.question === 0 ? "Первый вопрос теста" : verify.question === quizQuestions.length-1 ? "Последний вопрос теста" : `Вопрос ${(verify.question+1)} из ${quizQuestions.length} `,
+					verify.question === quizQuestions.length-1 ? "Последний вопрос" : `Вопрос ${(verify.question + textAnswersCount + 1)}`,
 					question.message,
 					{image: question.image, embed: true}
 				)
@@ -122,7 +125,7 @@ async function sendQuestion(channel, verify) {
 				warning(
 					null,
 					"Установка пароля",
-					"Внимание! Для того, чтобы обезопасить ваш будущий аккаунт нам нужно попросить у вас пароль, который будет установлен на ваш аккаунт по умолчанию. Таким образом, после подтверждения вашей заявки кто угодно не сможет зайти под вашим именем. Если вы переживаете за вашу конфиденциальность, вы можете придумать отдельный пароль для аккаунта на сервере, мы не заставляем вас вводить свои настоящие пароли. \n\nПароль всегда можно сменить в лобби через команду `/changepassword <старый пароль> <новый пароль>`",
+					"Внимание! Для того, чтобы обезопасить ваш будущий аккаунт нам нужно попросить у вас пароль, который будет установлен на ваш аккаунт по умолчанию. Таким образом, после подтверждения вашей заявки кто угодно не сможет зайти под вашим именем.\n\nПароль всегда можно сменить в лобби через команду `/changepassword <старый пароль> <новый пароль>`",
 					{embed: true}
 				)
 			],
@@ -237,7 +240,7 @@ async function sendForQuiz(message) {
 	updateVerify(message.author.id, "state", userVerify.state = States.OnQuiz);
 	updateVerify(message.author.id, "question",  userVerify.question = 0);
 	
-	await regular(verifyChannel, "Поздравляем! Первый этап позади!", "Вы ответили на все нужные вопросы и теперь вам нужно пройти короткий тестик! Поехали!")
+	// await regular(verifyChannel, "Поздравляем! Первый этап позади!", "Вы ответили на все нужные вопросы и теперь вам нужно пройти короткий тестик! Поехали!")
 	await sendQuestion(verifyChannel, userVerify);
 }
 
