@@ -78,10 +78,6 @@ module.exports = {
 			});
 
 			const changeName = await changeUserName(user.userId, name, isAdmin);
-			
-			try {
-				await member.setNickname(name);
-			} catch (e) {}
 
 			if (!changeName) return interaction.reply({
 				ephemeral: true,
@@ -89,8 +85,12 @@ module.exports = {
 					null, "Невозможно изменить имя игрока!",
 					!isAdmin ? "Ник уже используется другим игроком, сменить его невозможно! Обратитесь к более высоким рангам за помощью!" : "По всей видимости ник используется в верификации, изменить его не получится!",
 					{embed: true}
-				)]
+				).setFooter({ text: "Это также может быть ошибка отправки команды на сервер. Проверьте статус систем на https://status.chunky.fun/" }) ]
 			});
+			
+			try {
+				await member.setNickname(name);
+			} catch (e) {}
 
 			interaction.reply({
 				ephemeral: true,

@@ -54,7 +54,7 @@ async function runCommand(serverNames, command) {
 
 	const firstFailed = answers.find(answer => !answer.status);
 	if (firstFailed) {
-		return { status: false, message: `Сервер "${firstFailed.name}" не смог выполнить команду! (${firstFailed.message})` };
+		return { status: false, message: `Сервер "${firstFailed.name}" не смог выполнить команду! (${firstFailed.message})`, answers };
 	}
 
 	return { status: true, answers };

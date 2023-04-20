@@ -42,9 +42,7 @@ async function freeUserName(name) {
 	const foundVerify = findVerify("nickname", name);
 	if (foundVerify) return false;
 
-	await removeFromWhitelist(name);
-
-	return true;
+	return (await removeFromWhitelist(name)).status; // true or false
 }
 
 
@@ -63,9 +61,7 @@ async function changeUserName(id, name, force = false) {
 
 	updateUserName(id, name);
 
-	await addToWhitelist(name);
-
-	return true;
+	return (await addToWhitelist(name)).status;
 }
 
 

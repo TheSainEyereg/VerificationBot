@@ -63,8 +63,10 @@ module.exports = {
 			
 						createUser(userId, verify.nickname, verify.answers);
 
-						await addToWhitelist(verify.nickname);
-						await register(verify.nickname, verify.tempPassword);
+						const wlRes = await addToWhitelist(verify.nickname);
+						const regRes = await register(verify.nickname, verify.tempPassword);
+
+						if (!wlRes.status || !regRes.status) throw new Error(wlRes.message || regRes.message);
 
 						await member.roles.add(roles.approved);
 					}

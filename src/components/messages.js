@@ -1,4 +1,4 @@
-const {ColorResolvable, EmbedBuilder, Message, TextChannel} = require("discord.js");
+const {ColorResolvable, EmbedBuilder, Embed, Message, TextChannel} = require("discord.js");
 const { Colors } = require("./constants");
 
 /**
@@ -11,7 +11,7 @@ const { Colors } = require("./constants");
  * @param {ColorResolvable} opt.color - Color
  * @param {string} opt.image - image url
  * @param {string} opt.content - message content
- * @returns Promise<Message> | Embed
+ * @returns {Promise<Message> | EmbedBuilder}
  */
 function regular(source, title, description, opt) {
 	/** @type {TextChannel} */
@@ -32,7 +32,7 @@ function regular(source, title, description, opt) {
  * @param {Boolean} opt.footer - Custom footer text
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
- * @returns Promise<Message> | Embed
+ * @returns {Promise<Message> | EmbedBuilder}
  */
 function url(source, url, text, opt) {
 	/** @type {TextChannel} */
@@ -55,7 +55,7 @@ function url(source, url, text, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
- * @returns Promise<Message> | Embed
+ * @returns {Promise<Message> | EmbedBuilder}
  */
 function success(source, title, description, opt) {
 	return regular(source, opt?.circle ? ":green_circle: "+title : ":white_check_mark: "+title, description, Object.assign({color: Colors.Success}, opt));
@@ -69,7 +69,7 @@ function success(source, title, description, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
- * @returns Promise<Message> | Embed
+ * @returns {Promise<Message> | EmbedBuilder}
  */
 function warning(source, title, description, opt) {
 	return regular(source, opt?.circle ? ":yellow_circle: "+title : ":warning: "+title, description, Object.assign({color: Colors.Warning}, opt));
@@ -83,7 +83,7 @@ function warning(source, title, description, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
- * @returns Promise<Message> | Embed
+ * @returns {Promise<Message> | EmbedBuilder}
  */
 function critical(source, title, description, opt) {
 	return regular(source, opt?.circle ? ":red_circle: "+title : ":no_entry_sign: "+title, description, Object.assign({color: Colors.Critical}, opt));
@@ -98,7 +98,7 @@ function critical(source, title, description, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
- * @returns Promise<Message> | Embed
+ * @returns {Promise<Message> | EmbedBuilder}
  */
 function question(source, title, description, opt) {
 	return regular(source, opt?.circle ? ":blue_circle: "+title : ":question: "+title, description, Object.assign({color: Colors.Question}, opt));
