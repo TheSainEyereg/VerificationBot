@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { Client, Routes, REST, Events, Collection, ActivityType } = require("discord.js");
+const { Client, REST, Events, Collection, ActivityType } = require("discord.js");
 const { regular } = require("../components/messages");
 const { getRulesMessages, getRulesMessage, setRulesMessage, getAllVerify, getTimestamp, saveTimestamp, updateVerify } = require("../components/dataManager");
 const { endConversation, startConversation } = require("../components/questionsManager");
@@ -133,7 +133,7 @@ module.exports = {
 		process.stdout.write("Done!\n");
 		
 		process.stdout.write("Cleaning up commands...");
-		await guild.commands.set([]);
+		// await guild.commands.set([]);
 		await client.application.commands.set([]);
 
 		process.stdout.write("Parsing commands...");
