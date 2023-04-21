@@ -97,7 +97,7 @@ function mentionUbanned(guild) {
 
 
 function pingStatus(client) {
-	fetch(`${kumaPushURL}&ping=${client.ws.ping}`).catch();
+	fetch(`${kumaPushURL}&ping=${client.ws.ping}`).catch(() => {});
 }
 
 module.exports = {
