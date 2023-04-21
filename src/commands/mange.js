@@ -26,9 +26,9 @@ module.exports = {
 	 */
 	async execute(interaction) {
 		if (!interaction.isChatInputCommand()) return;
-		
+
 		const subcommand = interaction.options.getSubcommand();
-			
+
 		const isAdmin = hasAccess(interaction.member, "administrator");
 
 		const member = interaction.options.getMember("user");
@@ -57,12 +57,15 @@ module.exports = {
 				]
 			});
 
-			await updatePassword(user.name, password);
-			
+			const passRes = await updatePassword(user.name, password);
+
 			interaction.reply({
 				ephemeral: true,
 				embeds: [
+					passRes.status ?
 					success(null, "Пароль изменен!", `Пароль игрока ${member.toString()} изменен! Не забудьте сообщить новый пароль игроку!`, {embed: true})
+					:
+					warning(null, "Не вышло!", "Не получилось отправить запрос смены пароля на сервер, повторите попытку позже.", {embed: true}).setFooter({ text: "Проверьте статус систем на https://status.chunky.fun/" })
 				]
 			});
 		}
@@ -87,7 +90,7 @@ module.exports = {
 					{embed: true}
 				).setFooter({ text: "Это также может быть ошибка отправки команды на сервер. Проверьте статус систем на https://status.chunky.fun/" }) ]
 			});
-			
+
 			try {
 				await member.setNickname(name);
 			} catch (e) {}
