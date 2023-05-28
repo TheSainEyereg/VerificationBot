@@ -7,6 +7,7 @@ const { quizQuestions } = require("../components/questionsList");
 const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/questionsManager");
 const { addToWhitelist, register } = require("../components/rconManager");
 const { roles } = require("../config");
+const { settings } = require("../config/config.prod");
 
 
 module.exports = {
@@ -63,10 +64,12 @@ module.exports = {
 			
 						createUser(userId, verify.nickname, verify.answers);
 
-						const wlRes = await addToWhitelist(verify.nickname);
-						const regRes = await register(verify.nickname, verify.tempPassword);
-
-						if (!wlRes.status || !regRes.status) throw new Error(wlRes.message || regRes.message);
+						if (!settings.serverless) {
+							const wlRes = await addToWhitelist(verify.nickname);
+							const regRes = await register(verify.nickname, verify.tempPassword);
+	
+							if (!wlRes.status || !regRes.status) throw new Error(wlRes.message || regRes.message);
+						}
 
 						await member.roles.add(roles.approved);
 					}

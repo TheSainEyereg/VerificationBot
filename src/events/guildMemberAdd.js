@@ -4,6 +4,7 @@ const { startConversation } = require("../components/questionsManager");
 const { getUser } = require("../components/dataManager");
 const { roles } = require("../config");
 const { addToWhitelist } = require("../components/rconManager");
+const { settings } = require("../config");
 
 module.exports = {
 	event: Events.GuildMemberAdd,
@@ -15,7 +16,7 @@ module.exports = {
 		const possibleUser = getUser(member.id);
 		if (possibleUser) {
 			await member.roles.add(roles.approved);
-			await addToWhitelist(possibleUser.name);
+			!settings.serverless && await addToWhitelist(possibleUser.name);
 			return;
 		}
 

@@ -12,7 +12,7 @@ module.exports = {
 	 */
 	async execute(member) {
 		const possibleUser = getUser(member.id);
-		if (possibleUser) return await removeFromWhitelist(possibleUser.name);
+		if (possibleUser) return !settings.serverless && await removeFromWhitelist(possibleUser.name);
 		
 		await endConversation(member.guild, member.user);
 		await unreactAll(member.user);

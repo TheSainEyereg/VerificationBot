@@ -66,7 +66,7 @@ const questions = [
 			const nicknameExists = !!(
 				getUserByName(message.content) ||
 				findVerify("nickname", message.content) ||
-				!settings.replaceWhitelist && (await getWhitelist()).includes(message.content)
+				!settings.serverless && !settings.replaceWhitelist && (await getWhitelist()).includes(message.content)
 			);
 
 			if (nicknameExists) {

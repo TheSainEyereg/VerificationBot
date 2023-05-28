@@ -54,7 +54,7 @@ async function changeUserName(id, name, force = false) {
 	const nicknameExists = !!(
 		possibleUser && possibleUser.userId !== id ||
 		possibleVerify && possibleVerify.userId !== id ||
-		!settings.replaceWhitelist && (await getWhitelist()).includes(name)
+		!settings.serverless && !settings.replaceWhitelist && (await getWhitelist()).includes(name)
 	);
 
 	if (nicknameExists && (!force || !(await freeUserName(name)))) return false;
@@ -93,7 +93,7 @@ async function mentionUnmuted(guild) {
  */
 function mentionUbanned(guild) {
 
-} // Date.now() > user.banUntil
+} // Date.now() > user.banedUntil
 
 
 function pingStatus(client) {

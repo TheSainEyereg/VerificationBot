@@ -42,7 +42,7 @@ module.exports = {
 
 		const whitelist = await getWhitelist();
 
-		if (!whitelist.includes(nickname.toLocaleLowerCase())) return interaction.reply({
+		if (!settings.serverless && !whitelist.includes(nickname.toLocaleLowerCase())) return interaction.reply({
 			ephemeral: true,
 			embeds: [
 				warning(null, "Ник не присутствует в вайтлисте!", "Ваш ник должен быть в вайтлисте, чтобы можно было привязать его к вашему Discord. Откройте тикет, если вам нужна помощь.", {embed: true})
