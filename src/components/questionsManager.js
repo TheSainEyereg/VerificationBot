@@ -150,6 +150,9 @@ async function startConversation(guild, user) {
 	try {
 		const member = await guild.members.fetch(user.id);
 		if (member.roles.cache.has(roles.approved)) return;
+	
+		const possibleUser = getUser(user.id);
+		if (possibleUser) return await member.roles.add(roles.approved);
 	} catch (e) {
 		return;
 	}
@@ -165,14 +168,14 @@ async function startConversation(guild, user) {
 
 	if (!category) {
 		try {
-			const DMChannel = await member.user.createDM();
+			const DMChannel = await user.createDM();
 			if (DMChannel) await warning(DMChannel, "О нет!", "Сейчас у нас слишком много заявок, пожалуйста, попробуйте позже!");
 		} catch (e) {}
 		return;
 	}
 
 	const channel = await guild.channels.create({
-		name: !userVerify?.nickname ? user.username : userVerify.nickname,
+		name: !userVerify?.nickname ? user.username : userVerify.state !== States.OnConfirmation ? userVerify.nickname : `🟢${userVerify.nickname}`,
 		type: ChannelType.GuildText,
 		parent: category.id
 	});
@@ -309,7 +312,7 @@ async function sendForConfirmation(interaction) {
 		],
 		files: [
 			{
-				name: "Ответы.txt",
+				name: "answers.txt",
 				attachment: Buffer.from(getAnswers(interaction.user.id).map(qa => `Вопрос: ${qa.q}\nОтвет: ${qa.a}\n\n`).join(""))
 			}
 		],
