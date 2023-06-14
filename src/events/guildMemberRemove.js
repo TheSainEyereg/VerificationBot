@@ -3,6 +3,7 @@ const { endConversation } = require("../components/questionsManager");
 const { unreactAll } = require("../components/reactionsManager");
 const { getUser } = require("../components/dataManager");
 const { removeFromWhitelist } = require("../components/rconManager");
+const { settings } = require("../config");
 
 module.exports = {
 	event: Events.GuildMemberRemove,

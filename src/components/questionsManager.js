@@ -1,6 +1,6 @@
 const { Message, Interaction, Guild, Channel, User, EmbedBuilder, ActionRowBuilder, ButtonBuilder, TextChannel, ButtonStyle, ChannelType, PermissionFlagsBits } = require("discord.js");
 const { channels, roles } = require("../config");
-const { deleteVerify, getAnswers, getCategories, getVerify, addCategory, createVerify, deleteCategory, updateVerify } = require("./dataManager");
+const { deleteVerify, getAnswers, getCategories, getVerify, addCategory, createVerify, deleteCategory, updateVerify, getUser } = require("./dataManager");
 const { textQuestions, quizQuestions } = require("./questionsList");
 const { regular, success, warning } = require("./messages");
 const { States, Colors } = require("./constants");
