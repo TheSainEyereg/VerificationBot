@@ -25,11 +25,9 @@ module.exports =  {
 		if (!interaction.isChatInputCommand()) return;
 		
 		const member = interaction.options.getMember("target");
-
 		const answers = interaction.options.getBoolean("answers");
 
-		if (answers && !hasAccess(interaction.member, "inspector")) return interaction.reply({
-			ephemeral: true,
+		if (answers && !hasAccess(interaction.member, "inspector")) return interaction.editReply({
 			embeds: [
 				warning(null, "Нет прав!", "Для получения ответов на анкету пользователя нужно быть проверяющим.", {embed: true})
 			]
@@ -37,15 +35,13 @@ module.exports =  {
 
 		const possibleUser = getUser(member.id);
 
-		if (!possibleUser?.answers && answers) return interaction.reply({
-			ephemeral: true,
+		if (!possibleUser?.answers && answers) return interaction.editReply({
 			embeds: [
 				warning(null, "Ответы не найдены", "Для данного человека не сохранены ответы на анкету.", {embed: true})
 			]
 		});
 
-		interaction.reply({
-			ephemeral: true,
+		interaction.editReply({
 			embeds: [
 				new EmbedBuilder({
 					color: Colors.Regular,
