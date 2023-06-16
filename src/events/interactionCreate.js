@@ -26,14 +26,15 @@ module.exports = {
 						warning(null, "Ошибка доступа!", "Данные кнопки только для проверяющих!", {embed: true})
 					]
 				})
+
+				await interaction.deferUpdate();
+
 				try {
 					const userId = interaction.customId.match(RegExps.Number)?.[0];
-
 					const verify = getVerify(userId);
-
 					const member = await interaction.guild.members.fetch(userId);
 		
-					if (member.roles.cache.has(roles.approved)) return interaction.reply({
+					if (member.roles.cache.has(roles.approved)) return interaction.followUp({
 						ephemeral: true,
 						embeds: [
 							critical(null, "Вердикт уже вынесен", "Данный человек уже был верифицирован!", {embed: true})
@@ -50,7 +51,7 @@ module.exports = {
 					}
 					
 					if (interaction.customId.startsWith("approve")) {
-						if (verify.state !== States.OnConfirmation) return interaction.reply({
+						if (verify.state !== States.OnConfirmation) return interaction.followUp({
 							ephemeral: true,
 							embeds: [
 								critical(null, "Слишком рано", "Человек ещё не прошел процедуру верификации!", {embed: true})
@@ -77,7 +78,7 @@ module.exports = {
 					endConversation(interaction.guild, member.user);
 				} catch (e) {
 					//console.error(e);
-					interaction.reply({
+					interaction.followUp({
 						ephemeral: true,
 						embeds: [
 							critical(null, "Ошибка взаимодействия!", `Сообщение: \`${e.message}\``, {embed: true})
@@ -87,19 +88,19 @@ module.exports = {
 			}
 
 			if (interaction.customId.startsWith("answer")) {
+				const verify = findVerify("channelId", interaction.channel.id);
+				if (!verify) return;
+
+				if (verify.userId !== interaction.user.id) return interaction.reply({
+					ephemeral: true,
+					embeds: [
+						warning(null, "Ошибка доступа!", "Данные кнопки доступны только проходящим тест пользователям!", {embed: true})
+					]
+				});
+
+				await interaction.deferUpdate();
+
 				try {
-					const verify = findVerify("channelId", interaction.channel.id);
-					if (!verify) return;
-
-					if (verify.userId !== interaction.user.id) return interaction.reply({
-						ephemeral: true,
-						embeds: [
-							warning(null, "Ошибка доступа!", "Данные кнопки доступны только проходящим тест пользователям!", {embed: true})
-						]
-					});
-
-					await interaction.deferUpdate();
-
 					const quizAnswer = interaction.customId.match(RegExps.Number)?.[0];
 					
 					const quizOrder = verify.quizOrder.split(",");
@@ -160,43 +161,32 @@ module.exports = {
 		}
 		
 		if (interaction.customId === "requestPassword") {
-			try {
-				const verify = findVerify("channelId", interaction.channel.id);
-				if (!verify) return;
+			const verify = findVerify("channelId", interaction.channel.id);
+			if (!verify) return;
 
-				if (verify.userId !== interaction.user.id) return interaction.reply({
-					ephemeral: true,
-					embeds: [
-						warning(null, "Ошибка доступа!", "Вводить пароль только может пользователь проходящий анкету!", {embed: true})
-					]
-				});
+			if (verify.userId !== interaction.user.id) return interaction.reply({
+				ephemeral: true,
+				embeds: [
+					warning(null, "Ошибка доступа!", "Вводить пароль только может пользователь проходящий анкету!", {embed: true})
+				]
+			});
 
-				const modal = new ModalBuilder({
-					title: "Запрос пароля",
-					customId: "passwordModal"
-				});
+			const modal = new ModalBuilder({
+				title: "Запрос пароля",
+				customId: "passwordModal"
+			});
 
-				const password = new TextInputBuilder({
-					customId: "password",
-					label: "Введите пароль для сервера",
-					style: TextInputStyle.Short,
-					minLength: 10,
-					maxLength: 30
-				})
+			const password = new TextInputBuilder({
+				customId: "password",
+				label: "Введите пароль для сервера",
+				style: TextInputStyle.Short,
+				minLength: 10,
+				maxLength: 30
+			})
 
-				modal.addComponents(new ActionRowBuilder().addComponents(password));
-
-				await interaction.showModal(modal);
-			} catch (e) {
-				console.error(e);
-				interaction.reply({
-					ephemeral: true,
-					embeds: [
-						critical(null, "Ошибка взаимодействия!", `Сообщение: \`${e.message}\``, {embed: true})
-					]
-				})
-			}
-
+			modal.addComponents(new ActionRowBuilder().addComponents(password));
+			
+			await interaction.showModal(modal);
 		}
 
 
@@ -242,13 +232,14 @@ module.exports = {
 					warning(null, "Нет доступа к команде!", "Данная команда недоступна для вас!", {embed: true})
 				]
 			})
+			
+			await interaction.deferReply({ ephemeral: !command.notEphemeral });
 	
 			try {
 				await command.execute(interaction);
 			} catch (e) {
 				console.error(e);
-				interaction.reply({
-					ephemeral: true,
+				interaction.editReply({
 					embeds: [
 						critical(null, "Ошибка команды!", `Код: \`${e.message}\``, {embed: true})
 					]

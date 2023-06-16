@@ -12,15 +12,13 @@ module.exports =  {
 	async execute(interaction) {
 		const verify = findVerify("channelId", interaction.channel.id);
 
-		if (!verify) return interaction.reply({
-			ephemeral: true,
+		if (!verify) return interaction.editReply({
 			embeds: [
 				warning(null, "Неправильное использование!", "Команда должна запускаться исключительно в канале для верификации пользователя!", {embed: true})
 			]
 		});
 
-		interaction.reply({
-			ephemeral: true,
+		interaction.editReply({
 			embeds: [
 				question(null,"Отклонить игрока?", "Нажимая кнопку \"Отклонить\" вы отклоняете заявку и блокируете пользователю доступ к серверу!", {embed: true})
 			],

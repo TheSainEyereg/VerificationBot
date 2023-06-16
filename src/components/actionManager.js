@@ -42,7 +42,7 @@ async function freeUserName(name) {
 	const foundVerify = findVerify("nickname", name);
 	if (foundVerify) return false;
 
-	return (await removeFromWhitelist(name)).status; // true or false
+	return settings.serverless || (await removeFromWhitelist(name)).status; // true or false
 }
 
 
@@ -61,7 +61,7 @@ async function changeUserName(id, name, force = false) {
 
 	updateUserName(id, name);
 
-	return (await addToWhitelist(name)).status;
+	return settings.serverless || (await addToWhitelist(name)).status;
 }
 
 
