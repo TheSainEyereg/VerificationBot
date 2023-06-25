@@ -138,10 +138,7 @@ module.exports = {
 					await interaction.editReply({ components });
 					
 					
-					if (verify.question >= quizQuestions.length-1) {
-						await askForPassword(interaction);
-						return;
-					}
+					if (verify.question >= quizQuestions.length-1) return !settings.serverless ? await askForPassword(interaction) : await sendForConfirmation(interaction);
 
 
 					updateVerify(interaction.user.id, "question", ++verify.question);
