@@ -156,10 +156,10 @@ const questions = [
 		}
 	},
 	{
-		message: "У вас установлен мод на голосовой чат? (PlasmoVoice)",
+		message: "У вас установлен мод на голосовой чат? (Simple Voice Chat)",
 		async answer(message) {
 			if (findInArray(message.content, noAnswer)) {
-				await warning(message, "Обязательно скачай мод!", "Fabric: https://www.curseforge.com/minecraft/mc-mods/plasmo-voice/ \nForge: https://www.curseforge.com/minecraft/mc-mods/plasmo-voice/ ");
+				await warning(message, "Обязательно скачай мод!", "Fabric: https://modrinth.com/plugin/simple-voice-chat/versions?l=fabric&g=1.20.1 \nForge: https://modrinth.com/plugin/simple-voice-chat/versions?l=forge&g=1.20.1 ");
 				return true;
 			}
 			if (findInArray(message.content, yesAnswer)) {
@@ -174,7 +174,7 @@ const questions = [
 		message: "У вас установлен мод на эмоции? (EmoteCraft)",
 		async answer(message) {
 			if (findInArray(message.content, noAnswer)) {
-				await warning(message, "Обязательно скачай мод!", "Fabric: https://www.curseforge.com/minecraft/mc-mods/emotecraft/ \nForge: https://www.curseforge.com/minecraft/mc-mods/emotecraft-forge/ ");
+				await warning(message, "Обязательно скачай мод!", "Fabric: https://modrinth.com/mod/emotecraft/versions?l=fabric&g=1.20.1 \nForge: https://modrinth.com/mod/emotecraft/versions?l=forge&g=1.20.1 ");
 				return true;
 			}
 			if (findInArray(message.content, yesAnswer)) {
