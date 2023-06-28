@@ -29,8 +29,6 @@ async function sendRuleMessage(channel, type) {
 	setRulesMessage(type, message);
 }
 
-const rest = new REST({ version: "10" }).setToken(token);
-
 module.exports = {
 	event: Events.ClientReady,
 	once: true,
