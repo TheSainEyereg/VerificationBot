@@ -1,7 +1,7 @@
 const { Events, GuildMember } = require("discord.js");
 const { endConversation } = require("../components/questionsManager");
 const { unreactAll } = require("../components/reactionsManager");
-const { getUser } = require("../components/dataManager");
+const { getUser, updateUser } = require("../components/dataManager");
 const { removeFromWhitelist } = require("../components/rconManager");
 const { settings } = require("../config");
 
@@ -13,7 +13,10 @@ module.exports = {
 	 */
 	async execute(member) {
 		const possibleUser = getUser(member.id);
-		if (possibleUser) return !settings.serverless && await removeFromWhitelist(possibleUser.name);
+		if (possibleUser) {
+			if (!possibleUser.firstJoined) updateUser(member.id, "firstJoined", member.joinedTimestamp);
+			return !settings.serverless && await removeFromWhitelist(possibleUser.name);
+		}
 		
 		await endConversation(member.guild, member.user);
 		await unreactAll(member.user);

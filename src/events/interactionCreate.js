@@ -63,7 +63,7 @@ module.exports = {
 							if (DMChannel) await success(DMChannel, "Ваша заявка принята, добро пожаловать!");
 						} catch (e) {}
 			
-						createUser(userId, verify.nickname, verify.answers);
+						createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, Date.now(), verify.answers);
 
 						if (!settings.serverless) {
 							const wlRes = await addToWhitelist(verify.nickname);

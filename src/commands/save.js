@@ -53,7 +53,7 @@ module.exports = {
 			]
 		});
 
-		createUser(interaction.user.id, nickname);
+		createUser(interaction.user.id, nickname, interaction.member.joinedTimestamp, []);
 
 		let changedName = false;
 		try {

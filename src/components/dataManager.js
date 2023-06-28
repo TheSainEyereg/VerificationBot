@@ -5,36 +5,42 @@ const { RegExps } = require("./constants");
 const db = new Database("database.db");
 
 db.exec(`CREATE TABLE IF NOT EXISTS "settings" (
-	"guildId"		TEXT PRIMARY KEY,
-	"rulesJSON"		TEXT,
-	"categories"	TEXT,
-	"timestamp"		INTEGER
+	"guildId" TEXT PRIMARY KEY,
+	"rulesJSON" TEXT,
+	"categories" TEXT,
+	"timestamp" INTEGER
 )`);
 db.prepare("INSERT OR IGNORE INTO settings(guildId) VALUES(?)").run(guildId);
 
 db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
-	"userId"			TEXT PRIMARY KEY,
-	"channelId"			TEXT,
-	"state"				INTEGER,
-	"openUntil"			INTEGER,
-	"mutedUntil"		INTEGER,
-	"question"			INTEGER,
-	"answers"			TEXT,
-	"quizOrder"			TEXT,
-	"quizAnswerOrder"	TEXT,
-	"wrongCount"		TEXT,
-	"messageId" 		TEXT,
-	"nickname"			TEXT,
-	"tempPassword"		TEXT
+	"userId" TEXT PRIMARY KEY,
+	"channelId" TEXT,
+	"state" INTEGER,
+	"openUntil" INTEGER,
+	"mutedUntil" INTEGER,
+	"question" INTEGER,
+	"quizOrder" TEXT,
+	"quizAnswerOrder" TEXT,
+	"wrongCount" TEXT,
+	"answers" TEXT,
+	"messageId" TEXT,
+	"nickname" TEXT,
+	"tempPassword" TEXT
 )`);
 
 db.exec(`CREATE TABLE IF NOT EXISTS "users" (
-	"userId"		TEXT PRIMARY KEY,
-	"name"			TEXT,
-	"oldNames"		TEXT,
-	"banUntil"	INTEGER,
-	"banReason" 	TEXT,
-	"answers" 	TEXT
+	"userId" TEXT PRIMARY KEY,
+	"name" TEXT,
+	"oldNames" TEXT,
+	"banedAt" INTEGER,
+	"banedUntil" INTEGER,
+	"bannedBy" TEXT,
+	"banReason"  TEXT,
+	"approvedBy" TEXT,
+	"approvedAt" INTEGER,
+	"answers" TEXT,
+	"firstJoined" INTEGER,
+	"knownServers" TEXT
 )`);
 
 
@@ -168,8 +174,9 @@ function getUserByName(name) {
 	return db.prepare(`SELECT * FROM users WHERE name = ? OR INSTR(oldNames, ?) > 0`).get(name, name);
 }
 
-function createUser(id, name, answers) {
-	db.prepare("INSERT OR IGNORE INTO users(userId, name, answers) VALUES(?, ?, ?)").run(id, name, answers);
+function createUser(id, name, firstJoined, knownServers, approvedBy, approvedAt, answers) {
+	db.prepare("INSERT OR IGNORE INTO users(userId, name, firstJoined, knownServers, approvedBy, approvedAt, answers) VALUES(?, ?, ?, ?, ?, ?, ?)")
+		.run(id, name, firstJoined, knownServers.join(","), approvedBy, approvedAt, answers);
 }
 
 function updateUserName(id, name, save = true) {
