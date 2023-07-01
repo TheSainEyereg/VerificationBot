@@ -14,6 +14,13 @@ module.exports = {
 	 * @param {ChatInputCommandInteraction} interaction - interaction
 	 */
 	async execute(interaction) {
+		const potentialUser = getUser(interaction.user.id);
+		if (potentialUser) return interaction.editReply({
+			embeds: [
+				success(null, "Вы и ваш ник уже есть в базе данных!", `Данная команда только для тех, кто имеет роль подтвержденного игрока и не имеет привязки к никнейму в игре!\nВаш ник: \`${potentialUser.name}\``, {embed: true})
+			]
+		});
+
 		if (settings.replaceWhitelist) return interaction.editReply({
 			embeds: [
 				warning(null, "Нет смысла ¯\\_(ツ)_/¯", "Бот полностью контролирует вайтлист, и даже, если вы были в нем до его подключения, то сейчас вашего ника там нет.", {embed: true})
@@ -23,13 +30,6 @@ module.exports = {
 		if (!interaction.member.roles.cache.has(roles.approved)) return interaction.editReply({
 			embeds: [
 				warning(null, "Вы не подтвержденный игрок!", "Вы должны быть подтвержденным игроком. Если вы проходите верификацию, то ваш ник автоматически будет добавлен в вайтлист и связан с вашим Discord аккаунтом.", {embed: true})
-			]
-		});
-
-		const potentialUser = getUser(interaction.user.id);
-		if (potentialUser) return interaction.editReply({
-			embeds: [
-				success(null, "Вы и ваш ник уже есть в базе данных!", `Данная команда только для тех, кто имеет роль подтвержденного игрока и не имеет привязки к никнейму в игре!\nВаш ник: \`${potentialUser.name}\``, {embed: true})
 			]
 		});
 
