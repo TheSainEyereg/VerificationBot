@@ -219,7 +219,7 @@ module.exports = {
 		}
 
 	
-		if (interaction.isCommand()) {
+		if (interaction.isChatInputCommand()) {
 			const command = interaction.client.commands.get(interaction.commandName);
 			if (!command) return;
 			

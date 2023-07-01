@@ -20,11 +20,9 @@ module.exports =  {
 	access: "user",
 	/**
 	 * Interaction
-	 * @param {Interaction} interaction - interaction
+	 * @param {ChatInputCommandInteraction} interaction - interaction
 	 */
 	async execute(interaction) {
-		if (!interaction.isChatInputCommand()) return;
-		
 		const member = interaction.options.getMember("target") || interaction.member;
 
 		const answers = interaction.options.getBoolean("answers");

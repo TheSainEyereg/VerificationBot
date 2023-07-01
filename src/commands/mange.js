@@ -23,11 +23,9 @@ module.exports = {
 	access: "moderator",
 	/**
 	 * Interaction
-	 * @param {Interaction} interaction - interaction
+	 * @param {ChatInputCommandInteraction} interaction - interaction
 	 */
 	async execute(interaction) {
-		if (!interaction.isChatInputCommand()) return;
-
 		const subcommand = interaction.options.getSubcommand();
 		const isAdmin = hasAccess(interaction.member, "administrator");
 		const member = interaction.options.getMember("user");

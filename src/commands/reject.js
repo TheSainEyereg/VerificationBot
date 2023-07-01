@@ -7,7 +7,7 @@ module.exports =  {
 	access: "inspector",
 	/**
 	 * Interaction
-	 * @param {Interaction} interaction - interaction
+	 * @param {ChatInputCommandInteraction} interaction - interaction
 	 */
 	async execute(interaction) {
 		const verify = findVerify("channelId", interaction.channel.id);

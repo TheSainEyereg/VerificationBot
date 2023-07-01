@@ -11,11 +11,9 @@ module.exports = {
 	access: "user",
 	/**
 	 * Interaction
-	 * @param {Interaction} interaction - interaction
+	 * @param {ChatInputCommandInteraction} interaction - interaction
 	 */
 	async execute(interaction) {
-		if (!interaction.isChatInputCommand()) return;
-
 		if (settings.replaceWhitelist) return interaction.editReply({
 			embeds: [
 				warning(null, "Нет смысла ¯\\_(ツ)_/¯", "Бот полностью контролирует вайтлист, и даже, если вы были в нем до его подключения, то сейчас вашего ника там нет.", {embed: true})
