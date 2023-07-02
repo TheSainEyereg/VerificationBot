@@ -298,11 +298,11 @@ async function sendForConfirmation(interaction) {
 					},
 					{
 						name: "Дата регистрации аккаунта",
-						value: interaction.user.createdAt.toLocaleString("ru")
+						value: `<t:${Math.floor(interaction.user.createdAt / 1000)}>`,
 					},
 					{
 						name: "Дата входа на сервер",
-						value: interaction.member.joinedAt.toLocaleString("ru")
+						value: `<t:${Math.floor(interaction.member.joinedAt / 1000)}>`,
 					}
 				],
 				footer: {
