@@ -6,8 +6,7 @@ const { critical, warning } = require("../components/messages");
 const { quizQuestions } = require("../components/questionsList");
 const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/questionsManager");
 const { addToWhitelist, register } = require("../components/rconManager");
-const { roles } = require("../config");
-const { settings } = require("../config/config.prod");
+const { roles, settings } = require("../config");
 
 
 module.exports = {
