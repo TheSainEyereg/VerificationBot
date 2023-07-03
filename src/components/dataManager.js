@@ -24,14 +24,14 @@ db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
 	"wrongCount" TEXT,
 	"answers" TEXT,
 	"messageId" TEXT,
-	"nickname" TEXT,
+	"nickname" TEXT COLLATE NOCASE,
 	"tempPassword" TEXT
 )`);
 
 db.exec(`CREATE TABLE IF NOT EXISTS "users" (
 	"userId" TEXT PRIMARY KEY,
-	"name" TEXT,
-	"oldNames" TEXT,
+	"name" TEXT COLLATE NOCASE,
+	"oldNames" TEXT COLLATE NOCASE,
 	"banedAt" INTEGER,
 	"banedUntil" INTEGER,
 	"bannedBy" TEXT,
