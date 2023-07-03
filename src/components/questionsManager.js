@@ -60,9 +60,7 @@ async function checkForChannel(guild, id) {
 		try {
 			await guild.channels.fetch(id);
 			return true;
-		} catch (e) {
-			return false;
-		}
+		} catch (e) {}
 	}
 	return false;
 }
