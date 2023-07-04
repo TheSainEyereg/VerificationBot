@@ -27,7 +27,7 @@ function logApproval(approved) {
 	const user = getUser(approved.id);
 	return sendEmbedLog(approved.guild, new EmbedBuilder({
 		color: Colors.Regular,
-		title: "Пользователь подтвержден",
+		title: "Игрок подтвержден",
 		fields: [
 			{
 				name: "Discord ID",
@@ -35,7 +35,7 @@ function logApproval(approved) {
 				inline: true
 			},
 			{
-				name: "Текущий ник",
+				name: "Ник игрока",
 				value: `\`${user.name}\``,
 				inline: true
 			},
