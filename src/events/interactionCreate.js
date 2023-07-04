@@ -7,6 +7,7 @@ const { quizQuestions } = require("../components/questionsList");
 const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/questionsManager");
 const { addToWhitelist, register } = require("../components/rconManager");
 const { roles, settings } = require("../config");
+const { logApproval } = require("../components/loggingManager");
 
 
 module.exports = {
@@ -72,6 +73,7 @@ module.exports = {
 						}
 
 						await member.roles.add(roles.approved);
+						logApproval(member);
 					}
 
 					endConversation(interaction.guild, member.user);
