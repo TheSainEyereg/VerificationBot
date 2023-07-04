@@ -6,7 +6,7 @@ const { getRulesMessages, getRulesMessage, setRulesMessage, getAllVerify, getTim
 const { endConversation, startConversation } = require("../components/questionsManager");
 const { isUserReactedOther, isUserReactedAll, unreactAll } = require("../components/reactionsManager");
 const { token, channels, rules, guildId } = require("../config");
-const { pingStatus, closeOverdue, mentionUnmuted } = require("../components/actionManager");
+const { pingStatus, closeOverdue, mentionUnmuted, removeApprovedRoles } = require("../components/actionManager");
 
 
 async function sendRuleMessage(channel, type) {
@@ -109,7 +109,9 @@ module.exports = {
 
 		process.stdout.write("Starting timers...");
 
-		client.run600 = () => {};
+		client.run600 = () => {
+			removeApprovedRoles(guild);
+		};
 		client.run300 = () => {};
 		client.run60 = () => {
 			saveTimestamp();
@@ -122,11 +124,16 @@ module.exports = {
 			mentionUnmuted(guild);
 		};
 
-		client._600interval = setInterval(client.run600, 60e4); client.run600();
-		client._300interval = setInterval(client.run300, 30e4); client.run300();
-		client._60interval = setInterval(client.run60, 6e4); client.run60();
-		client._30interval = setInterval(client.run30, 3e4); client.run30();
-		client._10interval = setInterval(client.run10, 1e4); client.run10();
+		client._600interval = setInterval(client.run600, 600e3);
+		client.run600();
+		client._300interval = setInterval(client.run300, 300e3);
+		client.run300();
+		client._60interval = setInterval(client.run60, 60e3);
+		client.run60();
+		client._30interval = setInterval(client.run30, 30e3);
+		client.run30();
+		client._10interval = setInterval(client.run10, 10e3);
+		client.run10();
 		
 		process.stdout.write("Done!\n");
 		
