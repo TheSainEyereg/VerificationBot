@@ -31,7 +31,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
 db.exec(`CREATE TABLE IF NOT EXISTS "users" (
 	"userId" TEXT PRIMARY KEY,
 	"name" TEXT COLLATE NOCASE,
-	"oldNames" TEXT COLLATE NOCASE,
+	"oldNames" TEXT,
 	"banedAt" INTEGER,
 	"banedUntil" INTEGER,
 	"bannedBy" TEXT,
@@ -171,7 +171,7 @@ function getUser(id) {
 }
 
 function getUserByName(name) {
-	return db.prepare(`SELECT * FROM users WHERE name = ? OR INSTR(oldNames, ?) > 0`).get(name, name);
+	return db.prepare(`SELECT * FROM users WHERE name = ? OR oldNames LIKE ?`).get(name, `%${name}%`);
 }
 
 function createUser(id, name, firstJoined, knownServers, approvedBy, approvedAt, answers) {
