@@ -23,7 +23,7 @@ module.exports = {
 			]
 		});
 
-		const isOld = user.name !== nickname;
+		const isOld = user.name.toLowerCase() !== nickname.toLowerCase();
 
 		interaction.editReply({
 			embeds: [
