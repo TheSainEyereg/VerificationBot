@@ -1,4 +1,4 @@
-const { Guild, EmbedBuilder, GuildMember } = require("discord.js");
+const { Guild, EmbedBuilder, ButtonInteraction } = require("discord.js");
 const { channels: { logs } } = require("../config");
 const { Colors } = require("./constants");
 const { getUser } = require("./dataManager");
@@ -21,32 +21,35 @@ async function sendEmbedLog(guild, embed, content) {
 }
 
 /**
- * @param {GuildMember} approved
+ * @param {ButtonInteraction} interaction 
+ * @param {*} verify
  */
-function logApproval(approved) {
-	const user = getUser(approved.id);
-	return sendEmbedLog(approved.guild, new EmbedBuilder({
-		color: Colors.Regular,
-		title: "Игрок подтвержден",
+function logInspection(interaction, verify) {
+	const possibleUser = getUser(verify.userId);
+
+	return sendEmbedLog(interaction.guild, new EmbedBuilder({
+		color: !!possibleUser ? Colors.Regular : Colors.Critical,
+		title: !!possibleUser ? "Игрок подтвержден" : "Игрок отклонен",
 		fields: [
 			{
 				name: "Discord ID",
-				value: `\`${user.userId}\``,
+				value: `\`${verify.userId}\``,
 				inline: true
 			},
 			{
 				name: "Ник игрока",
-				value: `\`${user.name}\``,
+				value: `\`${verify.nickname}\``,
 				inline: true
 			},
 			{
-				name: "Подтвержден",
-				value: `<@${user.approvedBy}> <t:${Math.floor(user.approvedAt / 1000)}>`,
+				name: "Проверен",
+				value: `<@${interaction.user.id}> <t:${Math.floor( interaction.createdTimestamp / 1000 )}>`,
 			}
 		]
 	}))	
 }
 
+
 module.exports = {
-	logApproval
+	logInspection
 }

@@ -7,7 +7,7 @@ const { quizQuestions } = require("../components/questionsList");
 const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/questionsManager");
 const { addToWhitelist, register } = require("../components/rconManager");
 const { roles, settings } = require("../config");
-const { logApproval } = require("../components/loggingManager");
+const { logInspection } = require("../components/loggingManager");
 
 
 module.exports = {
@@ -63,7 +63,7 @@ module.exports = {
 							if (DMChannel) await success(DMChannel, "Ваша заявка принята, добро пожаловать!");
 						} catch (e) {}
 			
-						createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, Date.now(), verify.answers);
+						createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, interaction.createdTimestamp, verify.answers);
 
 						if (!settings.serverless) {
 							const wlRes = await addToWhitelist(verify.nickname);
@@ -73,8 +73,9 @@ module.exports = {
 						}
 
 						await member.roles.add(roles.approved);
-						logApproval(member);
 					}
+
+					await logInspection(interaction, verify);
 
 					endConversation(interaction.guild, member.user);
 				} catch (e) {
