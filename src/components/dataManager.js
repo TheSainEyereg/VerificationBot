@@ -171,7 +171,7 @@ function getUser(id) {
 }
 
 function getUserByName(name) {
-	return db.prepare(`SELECT * FROM users WHERE name = ? OR oldNames LIKE ?`).get(name, `%,${name},%`);
+	return db.prepare(`SELECT * FROM users WHERE name = ? OR oldNames LIKE ?`).get(name, `%${name}%`);
 }
 
 function createUser(id, name, firstJoined, knownServers, approvedBy, approvedAt, answers) {
