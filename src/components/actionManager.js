@@ -1,9 +1,9 @@
 const fetch = require("node-fetch");
-const { kumaPushURL, settings, channels } = require("../config");
+const { kumaPushURL, settings, channels, roles } = require("../config");
 const { States } = require("./constants");
 const { endConversation, checkForChannel } = require("./questionsManager");
 const { Guild } = require("discord.js");
-const { getAllVerify, getUserByName, findVerify, updateUserName, updateVerify } = require("./dataManager");
+const { getAllVerify, getUserByName, findVerify, updateUserName, updateVerify, getAllUsers } = require("./dataManager");
 const { warning, success } = require("./messages");
 const { unreactAll } = require("./reactionsManager");
 const { removeFromWhitelist, addToWhitelist, getWhitelist } = require("./rconManager");
@@ -38,21 +38,20 @@ async function closeOverdue(guild) {
 async function removeApprovedRoles(guild) {
 	if (!settings.replaceWhitelist) return;
 
-	// const allVerify = getAllVerify();
-	// const roles = await guild.roles.fetch();
-	// const members = await guild.members.fetch();
+	const allUsers = getAllUsers();
+	const members = await guild.members.fetch();
 
-	// const membersWithoutVerify = members.filter(m => !m.user.bot && !allVerify.find(v => v.userId === m.id));
+	const membersWithoutVerify = members.filter(m => !m.user.bot && !allUsers.find(v => v.userId === m.id));
 
-	// for (const member of membersWithoutVerify.values()) {
-	// 	if (!member.roles.cache.has(roles.approved)) continue;
-	// 	try {
-	// 		await member.roles.remove(roles.approved);
+	for (const member of membersWithoutVerify.values()) {
+		if (!member.roles.cache.has(roles.approved)) continue;
 
-	// 		const DMChannel = await member.user.createDM();
-	// 		if (DMChannel) await warning(DMChannel, "Пройдите верификацию!", `Внимание, было обнаружено, что у вас установлена роль подтвержденного пользователя, но при этом информации о вас нет в базе данных. Возможно, что вы получили роль до введения базы данных или не успели вовремя сохранить свой ник через /save. \nЧто делать дальше? Сейчас вам нужно пройти анкету. Роль была снята с вас автоматически и вам остается лишь поставить или сначала убрать, а затем поставить галочки под каждым сообщением в канале <#${channels.rules}>. После этих действий для вас создастся канал, где вы сможете самостоятельно пройти анкету, по прохождению которой вас подтвердят и вам вернется роль.`);
-	// 	} catch (e) {}
-	// }
+		try {
+			await member.roles.remove(roles.approved);
+			
+			await warning(member, "Пройдите верификацию!", `Внимание, было обнаружено, что у вас установлена роль подтвержденного игрока, но при этом информации о вас нет в базе данных. Возможно, что вы получили роль до введения базы игроков или не успели вовремя сохранить свой ник через /save. \n\nЧто делать дальше? \nСейчас вам нужно пройти анкету. Роль была снята с вас автоматически и вам остается лишь поставить или сначала убрать, а затем поставить галочки под каждым сообщением в канале <#${channels.rules}>. После этих действий для вас создастся канал, где вы сможете самостоятельно пройти анкету, по прохождении которой вас подтвердят и вам вернется роль.`);
+		} catch (e) {}
+	}
 }
 
 async function freeUserName(name) {
