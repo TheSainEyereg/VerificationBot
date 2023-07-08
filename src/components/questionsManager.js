@@ -166,8 +166,7 @@ async function startConversation(guild, user) {
 
 	if (!category) {
 		try {
-			const DMChannel = await user.createDM();
-			if (DMChannel) await warning(DMChannel, "О нет!", "Сейчас у нас слишком много заявок, пожалуйста, попробуйте позже!");
+			await warning(user, "О нет!", "Сейчас у нас слишком много заявок, пожалуйста, попробуйте позже!");
 		} catch (e) {}
 		return;
 	}

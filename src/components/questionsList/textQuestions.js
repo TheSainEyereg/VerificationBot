@@ -43,8 +43,7 @@ const questions = [
 				updateVerify(message.author.id, "state", States.ShouldEnd);
 
 				try {
-					const DMChannel = await message.author.createDM();
-					if (DMChannel) await critical(DMChannel, "Вы ешё слишком молоды, чтобы играть на сервере!", "Напишите Olejka#4300 для оспаривания блокировки.");	
+					await critical(message.author, "Вы ешё слишком молоды, чтобы играть на сервере!", "Напишите Olejka#4300 для оспаривания блокировки.");	
 				} catch (e) {}
 
 				await message.member.ban({reason: `Слишком молодой (${number})`});

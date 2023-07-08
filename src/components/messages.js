@@ -1,9 +1,9 @@
-const {ColorResolvable, EmbedBuilder, Embed, Message, TextChannel} = require("discord.js");
+const {ColorResolvable, EmbedBuilder, Message, TextChannel, GuildMember, User} = require("discord.js");
 const { Colors } = require("./constants");
 
 /**
  * Regular message
- * @param {Message|TextChannel} source - A message or text channel to send the message to
+ * @param {Message | TextChannel | GuildMember | User} source - A message or text channel to send the message to
  * @param {String} title - Titile
  * @param {String} description - Description
  * @param {Object} [opt] - Optional parameters 
@@ -14,8 +14,9 @@ const { Colors } = require("./constants");
  * @returns {Promise<Message> | EmbedBuilder}
  */
 function regular(source, title, description, opt) {
-	/** @type {TextChannel} */
 	const channel = source?.channel || source;
+	if (channel && !channel.send) throw new Error("Source has no send method");
+
 	const embed = new EmbedBuilder({color: opt?.color || Colors.Regular});
 	title && embed.setTitle(title);
 	description && embed.setDescription(description);

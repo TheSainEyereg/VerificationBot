@@ -22,8 +22,7 @@ async function closeOverdue(guild) {
 			const user = await guild.client.users.fetch(verify.userId);
 
 			try {
-				const DMChannel = await user.createDM();
-				if (DMChannel) await warning(DMChannel, "Как-то долго вышло!", "С момента открытия вашей анкеты прошло 48 часов и она была автоматически закрыта!");
+				await warning(user, "Как-то долго вышло!", "С момента открытия вашей анкеты прошло 48 часов и она была автоматически закрыта!");
 			} catch (e) {}
 
 			await endConversation(guild, user);

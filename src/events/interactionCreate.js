@@ -43,8 +43,7 @@ module.exports = {
 		
 					if (interaction.customId.startsWith("reject")) {
 						try {
-							const DMChannel = await member.user.createDM();
-							if (DMChannel) await critical(DMChannel, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
+							await critical(member, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
 						} catch (e) {}
 							
 						await member.ban({reason: `Заблокирован ${interaction.user.tag} через систему подачи заявок!`});
@@ -59,8 +58,7 @@ module.exports = {
 						})
 
 						try {
-							const DMChannel = await member.user.createDM();
-							if (DMChannel) await success(DMChannel, "Ваша заявка принята, добро пожаловать!");
+							success(member, "Ваша заявка принята, добро пожаловать!");
 						} catch (e) {}
 			
 						createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, interaction.createdTimestamp, verify.answers);
