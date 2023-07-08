@@ -13,17 +13,17 @@
 			],
 			"program": "${workspaceFolder}\\src\\app"
 		},
-		{
-			"type": "node",
-			"request": "launch",
-			"name": "Launch Prod Debug",
-			"skipFiles": [
-				"<node_internals>/**"
-			],
-			"env": {
-				"NODE_ENV": "production"
-			},
-			"program": "${workspaceFolder}\\src\\app"
-		}
+		// {
+		// 	"type": "node",
+		// 	"request": "launch",
+		// 	"name": "Launch Prod Debug",
+		// 	"skipFiles": [
+		// 		"<node_internals>/**"
+		// 	],
+		// 	"env": {
+		// 		"NODE_ENV": "production"
+		// 	},
+		// 	"program": "${workspaceFolder}\\src\\app"
+		// }
 	]
 }
