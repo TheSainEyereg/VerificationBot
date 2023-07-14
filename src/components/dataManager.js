@@ -68,6 +68,11 @@ function setRulesMessage(type, message) {
 	db.prepare("UPDATE settings SET rulesJSON = ? WHERE guildId = ?").run(JSON.stringify(cache.rulesMessages), guildId);
 }
 
+function deleteRulesMessage(type) {
+	delete cache.rulesMessages[type];
+	db.prepare("UPDATE settings SET rulesJSON = ? WHERE guildId = ?").run(JSON.stringify(cache.rulesMessages), guildId);
+}
+
 
 function getCategories() {
 	if (!cache.categories) {
@@ -204,7 +209,7 @@ function closeDB() {
 
 module.exports = {
 	getTimestamp, saveTimestamp,
-	getRulesMessages, getRulesMessage, setRulesMessage,
+	getRulesMessages, getRulesMessage, setRulesMessage, deleteRulesMessage,
 	getCategories, addCategory, deleteCategory,
 	getAllVerify, getVerify, findVerify, createVerify, updateVerify, deleteVerify,
 	addAnswer, getAnswers, deleteAnswers,
