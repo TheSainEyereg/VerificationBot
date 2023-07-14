@@ -6,7 +6,7 @@ const { getRulesMessages, getRulesMessage, setRulesMessage, getAllVerify, getTim
 const { endConversation, startConversation } = require("../components/questionsManager");
 const { isUserReactedOther, isUserReactedAll, unreactAll } = require("../components/reactionsManager");
 const { token, channels, rules, guildId } = require("../config");
-const { pingStatus, closeOverdue, mentionUnmuted, removeApprovedRoles } = require("../components/actionManager");
+const { pingStatus, closeOverdue, mentionUnmuted, removeApprovedRoles, cleanUpCategory } = require("../components/actionManager");
 
 
 async function sendRuleMessage(channel, type) {
@@ -130,6 +130,7 @@ module.exports = {
 
 		client.run600 = () => {
 			removeApprovedRoles(guild);
+			cleanUpCategory(guild);
 		};
 		client.run300 = () => {};
 		client.run60 = () => {

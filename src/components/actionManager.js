@@ -2,8 +2,8 @@ const fetch = require("node-fetch");
 const { kumaPushURL, settings, channels, roles } = require("../config");
 const { States } = require("./constants");
 const { endConversation, checkForChannel } = require("./questionsManager");
-const { Guild } = require("discord.js");
-const { getAllVerify, getUserByName, findVerify, updateUserName, updateVerify, getAllUsers } = require("./dataManager");
+const { Guild, ChannelType } = require("discord.js");
+const { getAllVerify, getUserByName, findVerify, updateUserName, updateVerify, getAllUsers, getCategories } = require("./dataManager");
 const { warning, success } = require("./messages");
 const { unreactAll } = require("./reactionsManager");
 const { removeFromWhitelist, addToWhitelist, getWhitelist } = require("./rconManager");
@@ -14,6 +14,26 @@ function syncWhitelist() {}
 /**
  * @param {Guild} guild 
  */
+async function cleanUpCategory(guild) {
+	const categoryIds = getCategories();
+	const verifyChannels = getAllVerify().map(v => v.channelId);
+	
+	const categories = (await guild.channels.fetch()).filter(c => c.type === ChannelType.GuildCategory);
+
+	for (const categoryId of categoryIds) {
+		const category = categories.find(c => c.id === categoryId);
+		if (!category) continue;
+
+		for (const [id, channel] of category.children.cache) {
+			if (verifyChannels.includes(id)) continue;
+		
+			try {
+				await channel.delete();
+			} catch (e) {}
+		}
+	}
+}
+
 async function closeOverdue(guild) {
 	const allVerify = getAllVerify();
 
@@ -30,7 +50,7 @@ async function closeOverdue(guild) {
 		}
 	}
 
-} // 
+}
 
 /**
  * @param {Guild} guild 
@@ -104,7 +124,7 @@ async function mentionUnmuted(guild) {
 
 		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`});
 	}
-} // Date.now() > verify.mutedUntil
+}
 
 
 /**
@@ -122,5 +142,5 @@ function pingStatus(client) {
 module.exports = {
 	pingStatus, syncWhitelist,
 	freeUserName, changeUserName,
-	closeOverdue, mentionUnmuted, mentionUbanned, removeApprovedRoles
+	closeOverdue, mentionUnmuted, mentionUbanned, removeApprovedRoles, cleanUpCategory
 }
