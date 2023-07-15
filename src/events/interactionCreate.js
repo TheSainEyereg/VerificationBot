@@ -1,6 +1,6 @@
 const { Events, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
 const { hasAccess } = require("../components/checkManager");
-const { findVerify, updateVerify, createUser, getVerify } = require("../components/dataManager");
+const { findVerify, updateVerify, createUser, getVerify, getUser } = require("../components/dataManager");
 const { States, RegExps } = require("../components/constants");
 const { critical, warning } = require("../components/messages");
 const { quizQuestions } = require("../components/questionsList");
@@ -34,12 +34,7 @@ module.exports = {
 					const verify = getVerify(userId);
 					const member = await interaction.guild.members.fetch(userId);
 		
-					if (member.roles.cache.has(roles.approved)) return interaction.followUp({
-						ephemeral: true,
-						embeds: [
-							critical(null, "Вердикт уже вынесен", "Данный человек уже был верифицирован!", {embed: true})
-						]
-					})
+					if (getUser(userId)) return endConversation(interaction.guild, member.user);
 		
 					if (interaction.customId.startsWith("reject")) {
 						try {
