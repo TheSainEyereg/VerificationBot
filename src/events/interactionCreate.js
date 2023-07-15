@@ -61,14 +61,14 @@ module.exports = {
 							success(member, "Ваша заявка принята, добро пожаловать!");
 						} catch (e) {}
 			
-						createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, interaction.createdTimestamp, verify.answers);
-
 						if (!settings.serverless) {
 							const wlRes = await addToWhitelist(verify.nickname);
 							const regRes = await register(verify.nickname, verify.tempPassword);
 	
 							if (!wlRes.status || !regRes.status) throw new Error(wlRes.message || regRes.message);
 						}
+						
+						createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, interaction.createdTimestamp, verify.answers);
 
 						await member.roles.add(roles.approved);
 					}
