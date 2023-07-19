@@ -4,7 +4,7 @@
 		"start": "cross-env NODE_ENV=production node ./src/app"
 	},
 	"dependencies": {
-		"better-sqlite3": "^8.1.0",
+		"better-sqlite3": "^8.4.0",
 		"discord.js": "^14.7.1",
 		"node-fetch": "^2",
 		"rcon-client": "^4.2.3"
