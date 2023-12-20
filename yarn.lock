@@ -520,10 +520,10 @@ rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-rcon-client@^4.2.3:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/rcon-client/-/rcon-client-4.2.3.tgz#75b154c42099788e9f8b413454f78a4b22d8a9e2"
-  integrity sha512-g+DEzI3O0Nl4Y3mPp6DHhSpYeiv+wTq8iKxCumFGO0/SMCsdNfx9bpT5RyHa7phR5dvspKfQK0ZYJp1YCtXNng==
+rcon-client@^4.2.4:
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/rcon-client/-/rcon-client-4.2.4.tgz#2582d16847063b47b4db9b517c6646ab3d5a3aae"
+  integrity sha512-sTHYLbcu2qrrOX4TOD3rvcLZNs7xiAhTsnZZIvxviSpa0yeV63sPAVI0PeScn5IvhKOCMURGt1NmnQ8h/GxjtA==
   dependencies:
     typed-emitter "^0.1.0"
 
