@@ -147,6 +147,10 @@ const questions = [
 	{
 		message: "Расскажите подробно о себе.",
 		async answer(message) {
+			if (message.content.length < 50) {
+				await warning(message, "Минимум 50 символов!");
+				return false;
+			}
 			if (message.content.length > 500) {
 				await warning(message, "Максимум 500 символов!");
 				return false;
@@ -155,10 +159,10 @@ const questions = [
 		}
 	},
 	{
-		message: "У вас установлен мод на голосовой чат? (Simple Voice Chat)",
+		message: "У вас установлен мод на голосовой чат? (Plasmo Voice)",
 		async answer(message) {
 			if (findInArray(message.content, noAnswer)) {
-				await warning(message, "Обязательно скачай мод!", "Fabric: https://modrinth.com/plugin/simple-voice-chat/versions?l=fabric&g=1.20.1 \nForge: https://modrinth.com/plugin/simple-voice-chat/versions?l=forge&g=1.20.1 ");
+				await warning(message, "Обязательно скачай мод!", "Fabric: https://modrinth.com/plugin/plasmo-voice/versions?l=fabric&g=1.20.4 \nForge: https://modrinth.com/plugin/plasmo-voice/versions?l=forge&g=1.20.4 ");
 				return true;
 			}
 			if (findInArray(message.content, yesAnswer)) {
@@ -169,21 +173,21 @@ const questions = [
 			return false;
 		}
 	},
-	{
-		message: "У вас установлен мод на эмоции? (EmoteCraft)",
-		async answer(message) {
-			if (findInArray(message.content, noAnswer)) {
-				await warning(message, "Обязательно скачай мод!", "Fabric: https://modrinth.com/mod/emotecraft/versions?l=fabric&g=1.20.1 \nForge: https://modrinth.com/mod/emotecraft/versions?l=forge&g=1.20.1 ");
-				return true;
-			}
-			if (findInArray(message.content, yesAnswer)) {
-				return true;
-			}
+	// {
+	// 	message: "У вас установлен мод на эмоции? (EmoteCraft)",
+	// 	async answer(message) {
+	// 		if (findInArray(message.content, noAnswer)) {
+	// 			await warning(message, "Обязательно скачай мод!", "Fabric: https://modrinth.com/mod/emotecraft/versions?l=fabric&g=1.20.4 \nForge: https://modrinth.com/mod/emotecraft/versions?l=forge&g=1.20.4 ");
+	// 			return true;
+	// 		}
+	// 		if (findInArray(message.content, yesAnswer)) {
+	// 			return true;
+	// 		}
 
-			await warning(message, "Не смог понять вас", "Напишите да или нет");
-			return false;
-		}
-	}
+	// 		await warning(message, "Не смог понять вас", "Напишите да или нет");
+	// 		return false;
+	// 	}
+	// }
 ]
 
 module.exports = questions;

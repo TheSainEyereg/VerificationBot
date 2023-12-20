@@ -40,7 +40,7 @@ module.exports = {
 
 		client.user.setActivity("за игроками", {type: ActivityType.Watching});
 	
-		const channel = client.channels.cache.get(channels.rules);
+		const channel = await client.channels.fetch(channels.rules);
 		
 		console.log("Checking for rules:");
 		for (const type of Object.keys(rules)) {
