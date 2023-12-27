@@ -159,10 +159,10 @@ const questions = [
 		}
 	},
 	{
-		message: "У вас установлен мод на голосовой чат? (Simple Voice Chat)",
+		message: "У вас установлен мод на голосовой чат? (Plasmo Voice)",
 		async answer(message) {
 			if (findInArray(message.content, noAnswer)) {
-				await warning(message, "Обязательно скачай мод!", "[Скачать для Fabric (Modrinth)](https://modrinth.com/plugin/simple-voice-chat/versions?l=fabric&c=release) \n[Скачать для Forge (Modrinth)](https://modrinth.com/plugin/simple-voice-chat/versions?l=forge&c=release) ");
+				await warning(message, "Обязательно скачай мод!", "[Скачать для Fabric (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?l=fabric&c=release) \n[Скачать для Forge (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?l=forge&c=release) ");
 				return true;
 			}
 			if (findInArray(message.content, yesAnswer)) {
