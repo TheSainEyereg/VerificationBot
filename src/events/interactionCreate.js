@@ -25,9 +25,7 @@ module.exports = {
 					embeds: [
 						warning(null, "Ошибка доступа!", "Данные кнопки только для проверяющих!", {embed: true})
 					]
-				})
-
-				await interaction.deferUpdate();
+				});
 
 				try {
 					const userId = interaction.customId.match(RegExps.Number)?.[0];
@@ -37,37 +35,48 @@ module.exports = {
 					if (getUser(userId)) return endConversation(interaction.guild, member.user);
 		
 					if (interaction.customId.startsWith("reject")) {
-						try {
-							await critical(member, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
-						} catch (e) {}
-							
-						await member.ban({reason: `Заблокирован ${interaction.user.tag} через систему подачи заявок!`});
+						const modal = new ModalBuilder({
+							title: "Причина отклонения заявки",
+							customId: "rejectReason"+userId
+						});
+			
+						const reason = new TextInputBuilder({
+							customId: "reason",
+							label: "Введите причину",
+							style: TextInputStyle.Short,
+							minLength: 8,
+							maxLength: 40
+						})
+			
+						modal.addComponents(new ActionRowBuilder().addComponents(reason));
+						
+						await interaction.showModal(modal);
+						return;
+					}
+
+					if (verify.state !== States.OnConfirmation) return interaction.reply({
+						ephemeral: true,
+						embeds: [
+							critical(null, "Слишком рано", "Человек ещё не прошел процедуру верификации!", {embed: true})
+						]
+					});
+
+					await interaction.deferUpdate();
+
+					try {
+						success(member, "Ваша заявка принята, добро пожаловать!");
+					} catch (e) {}
+		
+					if (!settings.serverless) {
+						const wlRes = await addToWhitelist(verify.nickname);
+						const regRes = await register(verify.nickname, verify.tempPassword);
+
+						if (!wlRes.status || !regRes.status) throw new Error(wlRes.message || regRes.message);
 					}
 					
-					if (interaction.customId.startsWith("approve")) {
-						if (verify.state !== States.OnConfirmation) return interaction.followUp({
-							ephemeral: true,
-							embeds: [
-								critical(null, "Слишком рано", "Человек ещё не прошел процедуру верификации!", {embed: true})
-							]
-						})
-
-						try {
-							success(member, "Ваша заявка принята, добро пожаловать!");
-						} catch (e) {}
-			
-						if (!settings.serverless) {
-							const wlRes = await addToWhitelist(verify.nickname);
-							const regRes = await register(verify.nickname, verify.tempPassword);
-	
-							if (!wlRes.status || !regRes.status) throw new Error(wlRes.message || regRes.message);
-						}
-						
-						createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, interaction.createdTimestamp, verify.answers);
-
-						await member.roles.add(roles.approved);
-					}
-
+					createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, interaction.createdTimestamp, verify.answers);
+					
+					await member.roles.add(roles.approved);
 					await logInspection(interaction, verify);
 
 					endConversation(interaction.guild, member.user);
@@ -210,6 +219,25 @@ module.exports = {
 				updateVerify(interaction.user.id, "tempPassword", password);
 
 				await sendForConfirmation(interaction);
+			}
+
+			if (interaction.customId.startsWith("rejectReason")) {
+				const userId = interaction.customId.match(RegExps.Number)?.[0];
+				const verify = getVerify(userId);
+				const member = await interaction.guild.members.fetch(userId);
+				const reason = interaction.fields.getTextInputValue("reason");
+
+				await interaction.deferUpdate();
+				
+				try {
+					await critical(member, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
+				} catch (e) {}
+					
+				await member.ban({reason: `Заблокирован ${interaction.user.tag} через систему подачи заявок (${reason})`});
+				
+				await logInspection(interaction, verify);
+
+				endConversation(interaction.guild, member.user);
 			}
 		}
 

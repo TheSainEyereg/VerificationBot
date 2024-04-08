@@ -25,11 +25,11 @@ async function sendEmbedLog(guild, embed, content) {
  * @param {*} verify
  */
 function logInspection(interaction, verify) {
-	const possibleUser = getUser(verify.userId);
+	const approved = interaction.customId.startsWith("approve");
 
 	return sendEmbedLog(interaction.guild, new EmbedBuilder({
-		color: !!possibleUser ? Colors.Regular : Colors.Critical,
-		title: !!possibleUser ? "Игрок подтвержден" : "Игрок отклонен",
+		color: !!approved ? Colors.Regular : Colors.Critical,
+		title: !!approved ? "Игрок подтвержден" : "Игрок отклонен",
 		fields: [
 			{
 				name: "Discord ID",
@@ -41,6 +41,12 @@ function logInspection(interaction, verify) {
 				value: `\`${verify.nickname}\``,
 				inline: true
 			},
+			... (!approved) ? [
+				{
+					name: "Причина",
+					value: interaction.fields.getTextInputValue("reason"),
+				}
+			] : [],
 			{
 				name: "Проверен",
 				value: `<@${interaction.user.id}> <t:${Math.floor( interaction.createdTimestamp / 1000 )}>`,
