@@ -1,5 +1,5 @@
 const fetch = require("node-fetch");
-const { kumaPushURL, settings, channels, roles } = require("../config");
+const { kuma, settings, channels, roles } = require("../config");
 const { States } = require("./constants");
 const { endConversation, checkForChannel } = require("./conversationManager");
 const { Guild, ChannelType } = require("discord.js");
@@ -135,8 +135,9 @@ function mentionUbanned(guild) {
 } // Date.now() > user.banedUntil
 
 
-function pingStatus(client) {
-	fetch(`${kumaPushURL}&ping=${client.ws.ping}`).catch(() => {});
+async function pingStatus(client) {
+	if (kuma?.pushUrl)
+		await fetch(`${kuma.pushUrl}&ping=${client.ws.ping}`).catch(() => null);
 }
 
 module.exports = {

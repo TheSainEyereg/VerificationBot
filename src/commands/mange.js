@@ -5,7 +5,7 @@ const { getUser } = require("../components/dataManager");
 const { hasAccess } = require("../components/checkManager");
 const { changeUserName } = require("../components/actionManager");
 const { success, warning } = require("../components/messages");
-const { settings } = require("../config");
+const { settings, kuma } = require("../config");
 
 module.exports = {
 	data: new SlashCommandBuilder().setName("manage").setDescription("Обновляет пароль или ник игрока")
@@ -61,10 +61,9 @@ module.exports = {
 
 			interaction.editReply({
 				embeds: [
-					passRes.status ?
-					success(null, "Пароль изменен!", `Пароль игрока ${member.toString()} изменен! Не забудьте сообщить новый пароль игроку!`, {embed: true})
-					:
-					warning(null, "Не вышло!", "Не получилось отправить запрос смены пароля на сервер, повторите попытку позже.", {embed: true}).setFooter({ text: "Проверьте статус систем на https://status.chunky.fun/" })
+					passRes.status
+						? success(null, "Пароль изменен!", `Пароль игрока ${member.toString()} изменен! Не забудьте сообщить новый пароль игроку!`, {embed: true})
+						: warning(null, "Не вышло!", "Не получилось отправить запрос смены пароля на сервер, повторите попытку позже.", {embed: true}).setFooter(kuma?.url ? { text: `Проверьте статус систем на ${kuma.url}` } : null)
 				]
 			});
 		}
@@ -85,7 +84,7 @@ module.exports = {
 					null, "Невозможно изменить имя игрока!",
 					!isAdmin ? "Ник уже используется другим игроком, сменить его невозможно! Обратитесь к более высоким рангам за помощью!" : "По всей видимости ник используется в верификации, изменить его не получится!",
 					{embed: true}
-				).setFooter({ text: !settings.serverless ? "Это также может быть ошибка отправки команды на сервер. Проверьте статус систем на https://status.chunky.fun/" : "Бот находится в serverless режиме и не отправляет команды на сервер." }) ]
+				).setFooter({ text: !settings.serverless ? `Это также может быть ошибка отправки команды на сервер. ${kuma?.url ? `Проверьте статус систем на ${kuma.url}` : ""}` : "Бот находится в serverless режиме и не отправляет команды на сервер." }) ]
 			});
 
 			try {

@@ -52,7 +52,7 @@ process.on("unhandledRejection", handleError);
 process.on("uncaughtException", handleError)
 
 
-function handleInterrupt(code) {
+function handleInterrupt(reason) {
 	process.removeAllListeners();
 
 	process.stdout.write("🔴 Interrupt detected, destroying client...");
@@ -61,9 +61,9 @@ function handleInterrupt(code) {
 	saveTimestamp();
 	process.stdout.write("Closing rcon...");
 	closeRcon();
-	process.stdout.write(`Done! (${code})\n`);
+	process.stdout.write(`Done! (${reason})\n`);
 
-	process.exit(code);
+	process.exit();
 }
 
 process.once("exit", handleInterrupt);
