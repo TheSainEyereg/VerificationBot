@@ -1,6 +1,6 @@
 const { Events, GuildMember } = require("discord.js");
-const { endConversation } = require("../components/questionsManager");
-const { unreactAll } = require("../components/reactionsManager");
+const { endConversation } = require("../components/conversationManager");
+const { unreactAll } = require("../components/reactionManager");
 const { getUser, updateUser } = require("../components/dataManager");
 const { removeFromWhitelist } = require("../components/rconManager");
 const { settings } = require("../config");

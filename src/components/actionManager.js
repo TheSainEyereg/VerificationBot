@@ -1,11 +1,11 @@
 const fetch = require("node-fetch");
 const { kumaPushURL, settings, channels, roles } = require("../config");
 const { States } = require("./constants");
-const { endConversation, checkForChannel } = require("./questionsManager");
+const { endConversation, checkForChannel } = require("./conversationManager");
 const { Guild, ChannelType } = require("discord.js");
 const { getAllVerify, getUserByName, findVerify, updateUserName, updateVerify, getAllUsers, getCategories } = require("./dataManager");
 const { warning, success } = require("./messages");
-const { unreactAll } = require("./reactionsManager");
+const { unreactAll } = require("./reactionManager");
 const { removeFromWhitelist, addToWhitelist, getWhitelist } = require("./rconManager");
 
 

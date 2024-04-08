@@ -1,7 +1,7 @@
 const { Events } = require("discord.js");
 const { getVerify, addAnswer, updateVerify } = require("../components/dataManager");
 const { critical, regular } = require("../components/messages");
-const { endConversation, sendQuestion, sendForQuiz } = require("../components/questionsManager");
+const { endConversation, sendQuestion, sendForQuiz } = require("../components/conversationManager");
 const { textQuestions } = require("../components/questionsList");
 const { roles } = require("../config");
 const { States } = require("../components/constants");

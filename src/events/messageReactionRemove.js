@@ -1,6 +1,6 @@
 const { Events } = require("discord.js");
-const { isUserReactedOther } = require("../components/reactionsManager");
-const { endConversation } = require("../components/questionsManager");
+const { isUserReactedOther } = require("../components/reactionManager");
+const { endConversation } = require("../components/conversationManager");
 
 
 module.exports = {
