@@ -29,10 +29,10 @@ for (const [name, config] of Object.entries(rcon.servers)) servers.set(name, new
  * @returns {Promise<Result>}
  */
 async function runCommand(serverNames, command) {
-	const serverList = serverNames.map(name => ({name, server: servers.get(name)}));
-	for (const {name, server} of serverList) {
+	const serverList = serverNames.map(name => ({ name, server: servers.get(name) }));
+	for (const { name, server } of serverList) {
 		if (!server) return { status: false, message: `Сервер "${name}" не найден в списке доступных для выполнения команд!` };
-		
+
 		if (!server.socket || server.socket.readyState !== "open" && server.socket.connecting) {
 			try {
 				await server.connect();
@@ -41,9 +41,9 @@ async function runCommand(serverNames, command) {
 			}
 		}
 	}
-	
+
 	const answers = [];
-	for (const {name, server} of serverList) {
+	for (const { name, server } of serverList) {
 		try {
 			const response = await server.send(command);
 			answers.push({ name, status: true, message: response });
@@ -97,7 +97,7 @@ function updatePassword(nickname, password) {
 
 
 /** @returns {Array.<String>} */
-function getBans(page) {}
+function getBans(page) { }
 
 function banUser(nickname) {
 	return runCommand(rcon.bans, `ban ${nickname}`);
@@ -108,7 +108,17 @@ function unbanUser(nickname) {
 }
 
 function closeRcon() {
-	servers.forEach(server => server.socket && server.end());
+	let count = 0;
+	
+	servers.forEach(server => {
+		if (server.socket) {
+			server.end();
+			server.socket = null;
+			count++;
+		}
+	});
+
+	return count;
 }
 
 
