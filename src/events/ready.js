@@ -7,7 +7,7 @@ const { endConversation, startConversation } = require("../components/conversati
 const { isUserReactedOther, isUserReactedAll, unreactAll } = require("../components/reactionManager");
 const { token, channels, rules, guildId } = require("../config");
 const { pingStatus, closeOverdue, mentionUnmuted, removeApprovedRoles, cleanUpCategory } = require("../components/actionManager");
-
+const { closeRcon } = require("../components/rconManager");
 
 async function sendRuleMessage(channel, type) {
 	const message = await channel.send(
@@ -39,15 +39,15 @@ module.exports = {
 		console.log("🔵 Client ready!");
 
 		client.user.setActivity("за игроками", {type: ActivityType.Watching});
-	
+
 		const channel = await client.channels.fetch(channels.rules);
-		
+
 		console.log("Checking for rules:");
 		for (const type of Object.keys(rules)) {
 			try {
 				const id = getRulesMessage(type);
 				if (!id) throw 0;
-				
+
 				await channel.messages.fetch(id);
 				console.log(` ● Message "${type}" exists!`);
 			} catch (e) {
@@ -57,7 +57,7 @@ module.exports = {
 		}
 
 		const allDBMessages = getRulesMessages();
-	
+
 
 		process.stdout.write("Removing old rules...");
 
@@ -69,7 +69,7 @@ module.exports = {
 			} catch (e) {
 				console.error(e);
 			}
-			
+
 			deleteRulesMessage(type);
 		}
 
@@ -80,33 +80,33 @@ module.exports = {
 
 		const firstRuleMessageId = Object.values(allDBMessages)[0];
 		const firstRuleMessage = channel.messages.cache.find(m => m.id === firstRuleMessageId);
-	
+
 		const firstRuleMessageReactionManager = await firstRuleMessage.reactions.resolve("✅");
 		const firstRuleMessageReactionManagerUsers = await firstRuleMessageReactionManager.users.fetch();
-	
+
 		let shouldFetch = true;
 		for (const user of firstRuleMessageReactionManagerUsers.values()) {
 			if (user.id === client.user.id) continue;
-	
+
 			const isReactedAll = await isUserReactedOther(user, firstRuleMessage, {fetch: shouldFetch});
 			if (shouldFetch) shouldFetch = false;
-	
+
 			if (isReactedAll) startConversation(firstRuleMessage.guild, user);
 		}
 
 		for (const onVerifyId of getAllVerify().map(v => v.userId)) {
 			const isUncheckedAll = await isUserReactedAll({id: onVerifyId, client}, {unchecked: true});
-			
+
 			if (isUncheckedAll) endConversation(firstRuleMessage.guild, {id: onVerifyId, client});
 		}
 
 		process.stdout.write("Done!\n");
-	
+
 
 		process.stdout.write("Checking for left users...");
 
 		const allVerify = getAllVerify();
-		
+
 		const guild = await client.guilds.fetch(guildId);
 		const members = await guild.members.fetch();
 
@@ -132,7 +132,9 @@ module.exports = {
 			removeApprovedRoles(guild);
 			cleanUpCategory(guild);
 		};
-		client.run300 = () => {};
+		client.run300 = () => {
+			closeRcon();
+		};
 		client.run60 = () => {
 			saveTimestamp();
 			closeOverdue(guild);
@@ -154,9 +156,9 @@ module.exports = {
 		client.run30();
 		client._10interval = setInterval(client.run10, 10e3);
 		client.run10();
-		
+
 		process.stdout.write("Done!\n");
-		
+
 		process.stdout.write("Cleaning up commands...");
 		// await guild.commands.set([]);
 		await client.application.commands.set([]);
