@@ -11,11 +11,6 @@ module.exports =  {
 			.setName("target")
 			.setDescription("Пользователь")
 			.setRequired(false)
-	).addBooleanOption(option =>
-		option
-			.setName("answers")
-			.setDescription("Получить ответы при прохождении анкеты")
-			.setRequired(false)
 	),
 	access: "user",
 	/**
@@ -25,23 +20,9 @@ module.exports =  {
 	async execute(interaction) {
 		const member = interaction.options.getMember("target") || interaction.member;
 
-		const answers = interaction.options.getBoolean("answers");
-
 		const advancedOutput = hasAccess(interaction.member, ["inspector", "moderator"]);
 
-		if (answers && !advancedOutput) return interaction.editReply({
-			embeds: [
-				warning(null, "Нет прав!", "Для получения ответов на анкету пользователя нужно быть проверяющим и выше.", {embed: true})
-			]
-		});
-
 		const possibleUser = getUser(member.id);
-
-		if (!possibleUser?.answers && answers) return interaction.editReply({
-			embeds: [
-				warning(null, "Ответы не найдены", "Для данного человека не сохранены ответы на анкету.", {embed: true})
-			]
-		});
 
 		interaction.editReply({
 			embeds: [
@@ -109,7 +90,7 @@ module.exports =  {
 					]
 				})
 			],
-			... answers && {
+			... advancedOutput && possibleUser.answers && {
 				files: [{
 					name: "answers.txt",
 					attachment: Buffer.from(JSON.parse(possibleUser.answers).map(qa => `Вопрос: ${qa.q}\nОтвет: ${qa.a}\n\n`).join(""))
