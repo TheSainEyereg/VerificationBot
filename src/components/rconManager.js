@@ -19,8 +19,8 @@ for (const [name, config] of Object.entries(rcon.servers)) servers.set(name, new
 /**
  * @typedef {Object} Result
  * @property {Boolean} status
- * @property {String} [message]
- * @property {Array.<ServerResponse>} [answers]
+ * @property {String} [message] Only if status is false
+ * @property {Array.<ServerResponse>} [answers] Only if status is true
 */
 
 /**
@@ -58,6 +58,20 @@ async function runCommand(serverNames, command) {
 	}
 
 	return { status: true, answers };
+}
+
+function closeRcon() {
+	let count = 0;
+	
+	servers.forEach(server => {
+		if (server.socket) {
+			server.end();
+			server.socket = null;
+			count++;
+		}
+	});
+
+	return count;
 }
 
 
@@ -107,24 +121,10 @@ function unbanUser(nickname) {
 	return runCommand(rcon.bans, `unban ${nickname}`);
 }
 
-function closeRcon() {
-	let count = 0;
-	
-	servers.forEach(server => {
-		if (server.socket) {
-			server.end();
-			server.socket = null;
-			count++;
-		}
-	});
-
-	return count;
-}
-
 
 module.exports = {
+	runCommand, closeRcon,
 	getWhitelist, addToWhitelist, removeFromWhitelist,
 	register, updatePassword,
-	getBans, banUser, unbanUser,
-	closeRcon
+	getBans, banUser, unbanUser
 }
