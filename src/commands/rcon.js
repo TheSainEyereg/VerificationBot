@@ -19,7 +19,7 @@ module.exports = {
 			.setDescription("Выполнить команду на RCON")
 			.addStringOption(option => option
 				.setName("server")
-				.setChoices(Object.keys(rcon.servers))
+				.setChoices(...Object.keys(rcon.servers).map(server => ({ name: server, value: server })))
 				.setDescription("Сервер")
 				.setRequired(true)
 			)
@@ -72,9 +72,11 @@ module.exports = {
 				]
 			});
 
+			const answer = res.answers?.[0]?.message;
+
 			interaction.editReply({
 				embeds: [
-					success(null, "Выполнено!", res.answers?.[0]?.message, {embed: true})
+					success(null, "Выполнено!", answer ? `\`\`\`\n${answer}\n\`\`\`` : "Нет ответа", {embed: true})
 				]
 			});
 		}
