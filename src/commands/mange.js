@@ -1,11 +1,11 @@
-const { SlashCommandBuilder, Interaction } = require("discord.js");
+const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 const { RegExps } = require("../components/constants");
 const { updatePassword } = require("../components/rconManager");
-const { getUser } = require("../components/dataManager");
+const { getUser, updateUser } = require("../components/dataManager");
 const { hasAccess } = require("../components/checkManager");
 const { changeUserName } = require("../components/actionManager");
 const { success, warning } = require("../components/messages");
-const { settings, kuma } = require("../config");
+const { roles, settings, kuma } = require("../config");
 
 module.exports = {
 	data: new SlashCommandBuilder().setName("manage").setDescription("Обновляет пароль или ник игрока")
@@ -18,6 +18,11 @@ module.exports = {
 		subcommand.setName("nickname").setDescription("Изменить ник пользователю")
 		.addUserOption(option => option.setName("user").setDescription("Пользователь").setRequired(true))
 		.addStringOption(option => option.setName("name").setDescription("Новый ник").setRequired(true))	
+	)
+	.addSubcommand(subcommand =>
+		subcommand.setName("discord").setDescription("Изменить дискорд аккаунт пользователя")
+		.addUserOption(option => option.setName("user").setDescription("Пользователь").setRequired(true))
+		.addUserOption(option => option.setName("new").setDescription("Новый дискорд аккаунт").setRequired(true))
 	),
 
 	access: "moderator",
@@ -87,14 +92,35 @@ module.exports = {
 				).setFooter({ text: !settings.serverless ? `Это также может быть ошибка отправки команды на сервер. ${kuma?.url ? `Проверьте статус систем на ${kuma.url}` : ""}` : "Бот находится в serverless режиме и не отправляет команды на сервер." }) ]
 			});
 
-			try {
-				await member.setNickname(name);
-			} catch (e) {}
+			await member.setNickname(name).catch(() => null);
 
 			interaction.editReply({
 				embeds: [
 					success(null, "Ник изменен!", `Новое имя игрока ${member.toString()} сохранено! Старый никнейм также сохранен и доступен через команду /info.`, {embed: true})
 						.setFooter({ text: !settings.serverless ? "Учтите, что старый ник был удален из вайтлиста, зайти на сервер с ним больше невозможно" : "Бот находится в serverless режиме и не может управлять вайтлистом, учтите это!" })
+				]
+			});
+		}
+
+		if (subcommand === "discord") {
+			if (!isAdmin) return interaction.editReply({
+				embeds: [
+					warning(null, "Ограничение!", "Менять Discord аккаунт игроков могут только администраторы!", {embed: true})
+				]
+			});
+
+			const newMember = interaction.options.getMember("new");
+
+			updateUser(user.userId, "userId", newMember.id);
+
+			await newMember.setNickname(user.name).catch(() => null);
+
+			await newMember.roles.add(roles.approved);
+			await member.roles.remove(roles.approved);
+
+			interaction.editReply({
+				embeds: [
+					success(null, "Discord аккаунт изменен!", `Привязка игрока была перенесена на новый Discord аккаунт!`, {embed: true})
 				]
 			});
 		}
