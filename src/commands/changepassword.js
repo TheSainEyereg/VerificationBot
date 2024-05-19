@@ -1,9 +1,7 @@
-const { SlashCommandBuilder, Interaction } = require("discord.js");
+const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 const { RegExps } = require("../components/constants");
 const { updatePassword } = require("../components/rconManager");
 const { getUser } = require("../components/dataManager");
-const { hasAccess } = require("../components/checkManager");
-const { changeUserName } = require("../components/actionManager");
 const { success, warning } = require("../components/messages");
 const { settings, kuma } = require("../config");
 

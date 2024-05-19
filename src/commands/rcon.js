@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, Interaction, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits } = require("discord.js");
 const { success, warning, critical } = require("../components/messages");
 const { closeRcon, runCommand } = require("../components/rconManager");
 const { settings, rcon } = require("../config");

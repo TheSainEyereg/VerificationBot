@@ -1,4 +1,4 @@
-const { Interaction, ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require("discord.js");
+const { ChatInputCommandInteraction, ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require("discord.js");
 const { findVerify } = require("../components/dataManager.js");
 const { question, warning } = require("../components/messages.js");
 

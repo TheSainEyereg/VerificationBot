@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, Interaction, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } = require("discord.js");
 const { warning } = require("../components/messages");
 const { getUserByName } = require("../components/dataManager");
 const { Colors } = require("../components/constants");

@@ -16,6 +16,7 @@ module.exports = {
 		const possibleUser = getUser(member.id);
 		if (possibleUser) {
 			await member.roles.add(roles.approved);
+			await member.setNickname(possibleUser.name).catch(() => null);
 			!settings.serverless && await addToWhitelist(possibleUser.name);
 			return;
 		}
