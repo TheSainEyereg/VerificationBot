@@ -2,12 +2,11 @@ const {
 	Interaction,
 	Message,
 	Guild,
-	Channel,
+	GuildTextBasedChannel,
 	User,
 	EmbedBuilder,
 	ActionRowBuilder,
 	ButtonBuilder,
-	TextChannel,
 	ButtonStyle,
 	ChannelType,
 	PermissionFlagsBits,
@@ -81,21 +80,15 @@ async function getCategory(guild) {
 /**
  * @param {Guild} guild
  * @param {String} id - Channel ID
- * @returns {Promise<Boolean>}
+ * @returns {Promise<GuildTextBasedChannel | null>}
  */
 async function checkForChannel(guild, id) {
-	if (id) {
-		try {
-			await guild.channels.fetch(id);
-			return true;
-		} catch (e) {}
-	}
-	return false;
+	return id ? await guild.channels.fetch(id).catch(() => null) : null;
 }
 
 /**
  *
- * @param {Channel} channel
+ * @param {GuildTextBasedChannel} channel
  * @param {Object} verify
  */
 async function sendQuestion(channel, verify) {
@@ -268,12 +261,13 @@ async function endConversation(guild, user) {
 
 	deleteVerify(user.id);
 
-	const channelExists = await checkForChannel(guild, userVerify.channelId);
-	if (channelExists) await guild.channels.delete(userVerify.channelId);
+	const channel = await checkForChannel(guild, userVerify.channelId);
+	if (channel)
+		await channel.delete();
 
 	if (!userVerify?.messageId) return;
 
-	/** @type {TextChannel} */
+	/** @type {GuildTextBasedChannel} */
 	const answerChannel = await guild.channels.fetch(channels.answers);
 
 	try {
@@ -290,7 +284,7 @@ async function endConversation(guild, user) {
 async function askForPassword(interaction) {
 	const userVerify = getVerify(interaction.user.id);
 
-	/** @type {TextChannel} */
+	/** @type {GuildTextBasedChannel} */
 	const verifyChannel = await interaction.guild.channels.fetch(
 		userVerify.channelId
 	);
@@ -315,7 +309,7 @@ async function askForPassword(interaction) {
 async function sendForConfirmation(interaction) {
 	const userVerify = getVerify(interaction.user.id);
 
-	/** @type {TextChannel} */
+	/** @type {GuildTextBasedChannel} */
 	const verifyChannel = await interaction.guild.channels.fetch(
 		userVerify.channelId
 	);
@@ -326,7 +320,7 @@ async function sendForConfirmation(interaction) {
 		SendMessages: true,
 	});
 
-	/** @type {TextChannel} */
+	/** @type {GuildTextBasedChannel} */
 	const answerChannel = await interaction.guild.channels.fetch(
 		channels.answers
 	);

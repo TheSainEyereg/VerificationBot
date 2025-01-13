@@ -116,18 +116,14 @@ async function mentionUnmuted(guild) {
 		if (!verify.mutedUntil || date < verify.mutedUntil) continue;
 
 		updateVerify(verify.userId, "mutedUntil", null);
+		updateVerify(verify.userId, "mutedMessageId", null);
 
-		const channelExists = await checkForChannel(guild, verify.channelId);
-		if (!channelExists) continue;
+		const channel = await checkForChannel(guild, verify.channelId);
+		if (!channel)
+			continue;
 
-		const channel = await guild.channels.fetch(verify.channelId);
-
-		await channel.messages.fetch(verify.messageId)
-			.then(message => message.delete())
-			.catch(() => null);
-
-		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`})
-			.catch(() => null);
+		await channel.messages.delete(verify.mutedMessageId);
+		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`});
 	}
 }
 
