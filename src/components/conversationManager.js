@@ -1,5 +1,6 @@
 const {
 	Interaction,
+	Message,
 	Guild,
 	Channel,
 	User,
@@ -107,7 +108,7 @@ async function sendQuestion(channel, verify) {
 				(verify.question === questions.length - 1
 					? "Последний вопрос"
 					: `Вопрос ${verify.question + 1}`) + " (отвечайте текстом)",
-				question.message,
+				question.message + " (макс 1000 символов)",
 				{ image: question.image }
 			);
 		}
@@ -219,6 +220,8 @@ async function startConversation(guild, user) {
 	});
 
 	if (!userVerify) {
+		
+
 		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60e3);
 		await regular(
 			channel,
@@ -307,7 +310,7 @@ async function askForPassword(interaction) {
 }
 
 /**
- * @param {Interaction} interaction
+ * @param {Interaction | Message} interaction
  */
 async function sendForConfirmation(interaction) {
 	const userVerify = getVerify(interaction.user.id);
