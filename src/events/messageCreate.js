@@ -15,7 +15,7 @@ module.exports = {
 		if (message.author.bot)
 			return;
 	
-		const verify = getVerify(message.author.id);
+		let verify = getVerify(message.author.id);
 		if (!verify || verify.state !== States.OnAnswers || verify.channelId !== message.channel.id)
 			return;
 
@@ -38,6 +38,9 @@ module.exports = {
 			critical(message.channel, "Ошибка обработки ответа!", `Информация: \`${e.message}\``);
 			return;
 		}
+
+		if ((verify = getVerify(verify.userId)).state === States.ShouldEnd)
+			return await endConversation(interaction.guild, interaction.user);
 
 		addAnswer(message.author.id, question.message, (result ? "" : "[❌] ") + message.content);
 

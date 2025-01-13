@@ -1,7 +1,7 @@
-const { BaseGuildTextChannel, GuildMember } = require("discord.js");
-const { settings } = require("../config");
+const { BaseGuildTextChannel, GuildMember, ButtonStyle } = require("discord.js");
+const { settings, roles } = require("../config");
 const { updateVerify, findVerify, getUserByName } = require("./dataManager");
-const { RegExps } = require("./constants");
+const { RegExps, States } = require("./constants");
 const { warning, critical } = require("./messages");
 const { getWhitelist } = require("./rconManager");
 
@@ -14,25 +14,41 @@ const { getWhitelist } = require("./rconManager");
  */
 
 /**
- * @typedef {Object} TextQuestion
- * @property {"text"} type
+ * @typedef {Object} BaseQuestion
  * @property {String} message
+ * @property {"shuffle_start"|"shuffle_end"} [action]
  * @property {String} [image]
  * @property {AnswerCallback} [answer] Optional
  */
 
 /**
- * @typedef {Object} QuizQuestion
- * @property {"quiz"} type
- * @property {String} message
- * @property {String} [image]
- * @property {String[]} answers List of answers
- * @property {Number[]} [correct] Indexes of correct answers from 0
- * @property {AnswerCallback} [answer] Optional
+ * @typedef {Object} TextQuestion
+ * @property {"text"} type
  */
 
-/** @type {TextQuestion[] | QuizQuestion[]} */
+/**
+ * @typedef {Object} AdvancedQuizAnswer
+ * @property {String} text
+ * @property {ButtonStyle} [style]
+ */
+
+/**
+ * @typedef {Object} QuizQuestion
+ * @property {"quiz"} type
+ * @property {(AdvancedQuizAnswer | String)[]} answers List of answers
+ * @property {Number[]} [correct] Indexes of correct answers from 0
+ */
+
+/** @type {(BaseQuestion & (TextQuestion | QuizQuestion))[]} */
 const questions = [
+	{
+		type: "quiz",
+		message: "Пожалуйста, внимательно читайте все инструкции и не торопитесь с ответами. Важно, чтобы вы отвечали серьезно. Обратите внимание, что вопросы будут касаться правил сервера, поэтому подготовьтесь к ним. В конце заполнения анкеты проверяющий отправит вам актуальную версию игры и IP адрес сервера, обычно рассмотрение анкеты занимает от 5 до 20 минут. Не стоит пинговать проверяющего, это только затянет процесс верификации.",
+		answers: [{
+			text: "Готов заполнить анкету и отвечать честно.",
+			style: ButtonStyle.Success
+		}]
+	},
 	{
 		type: "text",
 		message: "Ваш игровой никнейм в майнкрафт?",
@@ -69,9 +85,21 @@ const questions = [
 	{
 		type: "quiz",
 		message: "Cколько вам лет?",
-		answers: ["8+", "14+", "17+", "20+"],
+		answers: [
+			{
+				text: "8+",
+				style: ButtonStyle.Danger,
+			},
+			{
+				text: "13+",
+				style: ButtonStyle.Success,
+			},
+			"18+"
+		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) === 0) {
+				updateVerify(member.id, "state", States.ShouldEnd);
+
 				await critical(member.user, "Вы ешё слишком молоды, чтобы играть на сервере!", "Напишите Olejka#4300 для оспаривания блокировки.")
 					.catch(() => null);
 	
@@ -86,11 +114,23 @@ const questions = [
 	{
 		type: "quiz",
 		message: "Ваш пол?",
-		answers: ["♂️ Мужской", "♀️ Женский", "⚧️ Другой"],
+		answers: [
+			"♂️ Мужской",
+			"♀️ Женский",
+			{
+				text: "⚧️ Другой",
+				style: ButtonStyle.Secondary
+			}
+		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) === 1) {
-				// администрация сервера может попросить пройти проверку то что у вас действительно женский пол, пусть задаванием вопросов
 				await warning(channel, "Потребуется подтверждение", "Во избежании социальной манипуляции, проверяющий или администрация может потребовать подтверждение вашего пола через доп вопросы");
+
+				try {
+					await member.roles.add(roles.woman)
+				} catch (e) {
+					await warning(channel, "Не смог выдать вам роль!", `Пожалуйста попросите администратора выдать вам отдельную роль!\n\`${e.message}\``);
+				}
 			}
 
 			return true;
@@ -99,7 +139,14 @@ const questions = [
 	{
 		type: "quiz",
 		message: "В какой стране вы находитесь?",
-		answers: ["🇷🇺 Россия", "🇺🇦 Украина", "🇩🇪 Другая Страна"],
+		answers: [
+			"🇷🇺 Россия",
+			"🇺🇦 Украина",
+			{
+				text: "🇩🇪 Другая Страна",
+				style: ButtonStyle.Secondary
+			}
+		],
 	},
 	{
 		type: "text",
@@ -108,10 +155,17 @@ const questions = [
 	{
 		type: "quiz",
 		message: "У вас установлен мод на голосовой чат PlasmoVoice?",
-		answers: ["Да", "Нет"],
+		answers: [
+			{
+				text: "Да",
+				style: ButtonStyle.Success
+			},
+			"Нет"
+		],
 		answer: async (channel, member, answer) => {
-			// Логика: если ответ "Нет", показываем информацию из файла infoplasma.txt
-			channel.send("Тут будет инфа о PlasmoVoice");
+			if (Number(answer) !== 0) {
+				await warning(channel, "Обязательно скачай мод!", "[Скачать для Fabric (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=fabric) \n[Скачать для Forge (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=forge) ");
+			}
 
 			return true;
 		},
@@ -151,7 +205,7 @@ const questions = [
 	},
 	{
 		type: "text",
-		message: "Расскажите, немного о себе. (макс 1000 символов)",
+		message: "Расскажите, немного о себе.",
 	},
 	{
 		type: "quiz",
@@ -165,13 +219,21 @@ const questions = [
 	{
 		type: "quiz",
 		message: "Будете ли вы принимать участие в жизни сервера?",
-		answers: ["Да", "Нет", "Честно, не знаю, как пойдет — так и будет"]
+		answers: ["Да", "Не знаю, как пойдет - так и будет"]
 	},
 	{
 		type: "quiz",
 		message: "Вы ознакомились с правилами сервера?",
-		answers: ["Да", "Нет"],
-		correct: [0],
+		answers: [
+			{
+				text: "Да",
+				style: ButtonStyle.Success
+			},
+			{
+				text: "Нет",
+				style: ButtonStyle.Danger
+			}
+		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) !== 0) {
 				await warning(channel, "Нужно согласиться с правилами!", "Потому что с ними не дружить не получится.");
@@ -207,6 +269,7 @@ const questions = [
 	},
 	{
 		type: "quiz",
+		action: "shuffle_start",
 		message:
 			"Вы проходите мимо заброшенного дома, который без таблички привата, и в нем находятся ресурсы. Какие ваши действия?",
 		answers: [
@@ -329,7 +392,7 @@ const questions = [
 		message:
 			"Вы хотите построить что-то на спавне, например, магазин, казино или другую постройку. Какие ваши действия?",
 		answers: [
-			"Я не буду строить без разрешения от ПСОМ (Правителя Спавна Обычного Мира). Подам заявку в этот сервер Discord для получения необходимого разрешения на строительство.",
+			"Я не буду строить без разрешения от ПСОМ.",
 			"Буду строить, что захочу, не обращая внимания на правила.",
 			"Я не уверен, как поступить в такой ситуации, возможно, уточню у администрации.",
 		],

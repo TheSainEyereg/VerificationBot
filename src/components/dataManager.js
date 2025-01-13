@@ -18,6 +18,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
 	"state" INTEGER,
 	"openUntil" INTEGER,
 	"mutedUntil" INTEGER,
+	"mutedMessageId" TEXT,
 	"question" INTEGER,
 	"answerOrder" TEXT,
 	"wrongCount" TEXT,

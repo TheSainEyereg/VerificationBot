@@ -101,46 +101,48 @@ async function checkForChannel(guild, id) {
 async function sendQuestion(channel, verify) {
 	if (verify.state === States.OnAnswers) {
 		const question = questions[verify.question];
+
+		const embed = regular(
+			null,
+			verify.question === 0
+				? "Начало верификации"
+				: verify.question === questions.length - 1
+					? `Вопрос ${verify.question + 1} - Последний вопрос`
+					: `Вопрос ${verify.question + 1}`,
+			question.message,
+			{ image: question.image, embed: true }
+		)
 	
 		if (question.type === "text") {
-			await regular(
-				channel,
-				(verify.question === questions.length - 1
-					? "Последний вопрос"
-					: `Вопрос ${verify.question + 1}`) + " (отвечайте текстом)",
-				question.message + " (макс 1000 символов)",
-				{ image: question.image }
-			);
+			embed.setFooter({ text: "Ответьте на вопрос текстом." });
+			await channel.send({
+				embeds: [ embed ],
+			});
 		}
 	
 		if (question.type === "quiz") {
 			const answerOrder = Object.keys(question.answers)
-				.sort(() => Math.random() - 0.5);
+			// 	.sort(() => Math.random() - 0.5);
 	
 			const components = answerOrder.map((answer, i) => {
-				const answerText = question.answers[answer];
+				const answerEntry = question.answers[Number(answer)];
+				
+				const answerText = typeof answerEntry === "string" ? answerEntry : answerEntry.text;
+				const style = typeof answerEntry === "string" ? ButtonStyle.Primary : answerEntry.style || ButtonStyle.Primary;
+
 				return new ButtonBuilder({
 					custom_id: `answer${i}`,
 					label: answerText.length > 80 ? answerText.slice(0, 77) + "..." : answerText,
-					style: ButtonStyle.Primary,
+					style
 				});
 			});
+
+			updateVerify(verify.userId, "answerOrder", answerOrder.join(","));
 	
 			await channel.send({
-				embeds: [
-					regular(
-						null,
-						verify.question === questions.length - 1
-							? "Последний вопрос"
-							: `Вопрос ${verify.question + 1}`,
-						question.message,
-						{ image: question.image, embed: true }
-					),
-				],
+				embeds: [ embed ],
 				components: [new ActionRowBuilder({ components })],
 			});
-	
-			updateVerify(verify.userId, "answerOrder", answerOrder.join(","));
 		}
 	}
 
@@ -220,8 +222,6 @@ async function startConversation(guild, user) {
 	});
 
 	if (!userVerify) {
-		
-
 		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60e3);
 		await regular(
 			channel,

@@ -122,7 +122,12 @@ async function mentionUnmuted(guild) {
 
 		const channel = await guild.channels.fetch(verify.channelId);
 
-		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`});
+		await channel.messages.fetch(verify.messageId)
+			.then(message => message.delete())
+			.catch(() => null);
+
+		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`})
+			.catch(() => null);
 	}
 }
 

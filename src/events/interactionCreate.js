@@ -81,7 +81,6 @@ module.exports = {
 
 					endConversation(interaction.guild, member.user);
 				} catch (e) {
-					//console.error(e);
 					interaction.followUp({
 						ephemeral: true,
 						embeds: [
@@ -92,8 +91,8 @@ module.exports = {
 			}
 
 			if (interaction.customId.startsWith("answer")) {
-				const verify = findVerify("channelId", interaction.channel.id);
-				if (!verify || verify.state !== States.OnAnswers || verify.channelId !== message.channel.id)
+				let verify = findVerify("channelId", interaction.channel.id);
+				if (!verify || verify.state !== States.OnAnswers || verify.channelId !== interaction.channel.id)
 					return;
 
 				if (verify.userId !== interaction.user.id) return interaction.reply({
@@ -109,7 +108,7 @@ module.exports = {
 					return;
 
 				const quizAnswer = interaction.customId.match(RegExps.Number)?.[0];
-				const answerOrder = verify.answerOrder.split(",");
+				const answerOrder = verify.answerOrder?.split(",") ?? [0, 1, 2, 3, 4, 5];
 				const answer = answerOrder[quizAnswer];
 				
 				const { components } = interaction.message;
@@ -120,11 +119,18 @@ module.exports = {
 				try {
 					if (question.answer)
 						result = await question.answer(interaction.channel, interaction.member, answer);
+					
+					verify = getVerify(verify.userId)
+
+					if (!verify || verify.state === States.ShouldEnd)
+						return await endConversation(interaction.guild, interaction.user);
 
 					addAnswer(interaction.user.id, question.message, (result ? "" : "[❌] ") + question.answers[Number(answer)]);
 	
 					if (!result) {
-						component.data.style = ButtonStyle.Danger;
+						if (component.data.style === ButtonStyle.Primary)
+							component.data.style = ButtonStyle.Danger;
+
 						component.data.disabled = true;
 	
 						await interaction.editReply({ components });
@@ -138,11 +144,13 @@ module.exports = {
 							await interaction.member.ban({reason: `Слишком много неправильных ответов`});
 						}
 						
-						if (verify.wrongCount % 3 === 0) {
+						if (verify.wrongCount % 5 === 0) {
 							updateVerify(interaction.user.id, "mutedUntil", Date.now() + 5 * 60e3);
 	
-							await critical(interaction.channel, "Эй!", "Дорогой Друг,ознакомься с правилами! Можешь повторить попытку через 5 минут :)");
 							await interaction.member.timeout(5 * 60e3, "Правила не читал ¯\\_(ツ)_/¯");
+
+							const mutedMessage = await critical(interaction.channel, "Эй!", "Дорогой Друг,ознакомься с правилами! Можешь повторить попытку через 5 минут :)");
+							updateVerify(interaction.user.id, "mutedMessageId", mutedMessage.id);
 						}
 	
 						return;
@@ -153,7 +161,9 @@ module.exports = {
 					return;
 				}
 
-				component.data.style = ButtonStyle.Success;
+				if (component.data.style === ButtonStyle.Primary)
+					component.data.style = ButtonStyle.Success;
+
 				for (const component of components[0].components)
 					component.data.disabled = true;
 
