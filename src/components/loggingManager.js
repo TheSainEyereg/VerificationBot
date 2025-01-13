@@ -1,7 +1,6 @@
 const { Guild, EmbedBuilder, ButtonInteraction } = require("discord.js");
 const { channels: { logs } } = require("../config");
 const { Colors } = require("./constants");
-const { getUser } = require("./dataManager");
 
 /**
  * 
@@ -52,7 +51,7 @@ function logInspection(interaction, verify) {
 				value: `<@${interaction.user.id}> <t:${Math.floor( interaction.createdTimestamp / 1000 )}>`,
 			}
 		]
-	}))	
+	}))
 }
 
 

@@ -1,13 +1,13 @@
 const { Events, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
 const { hasAccess } = require("../components/checkManager");
-const { findVerify, updateVerify, createUser, getVerify, getUser } = require("../components/dataManager");
+const { findVerify, updateVerify, createUser, getVerify, getUser, addAnswer } = require("../components/dataManager");
 const { States, RegExps } = require("../components/constants");
 const { critical, warning } = require("../components/messages");
-const { quizQuestions } = require("../components/questionsList");
 const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/conversationManager");
 const { addToWhitelist, register } = require("../components/rconManager");
 const { roles, settings } = require("../config");
 const { logInspection } = require("../components/loggingManager");
+const questions = require("../components/questions");
 
 
 module.exports = {
@@ -93,7 +93,8 @@ module.exports = {
 
 			if (interaction.customId.startsWith("answer")) {
 				const verify = findVerify("channelId", interaction.channel.id);
-				if (!verify) return;
+				if (!verify || verify.state !== States.OnAnswers || verify.channelId !== message.channel.id)
+					return;
 
 				if (verify.userId !== interaction.user.id) return interaction.reply({
 					ephemeral: true,
@@ -103,61 +104,66 @@ module.exports = {
 				});
 
 				await interaction.deferUpdate();
+				const question = questions[verify.question];
+				if (question.type !== "quiz")
+					return;
+
+				const quizAnswer = interaction.customId.match(RegExps.Number)?.[0];
+				const answerOrder = verify.answerOrder.split(",");
+				const answer = answerOrder[quizAnswer];
+				
+				const { components } = interaction.message;
+				const component = components[0].components.find(c => c.customId === interaction.customId);
+
+				let result = !question.correct || question.correct.includes(Number(answer));
 
 				try {
-					const quizAnswer = interaction.customId.match(RegExps.Number)?.[0];
-					
-					const quizOrder = verify.quizOrder.split(",");
-					const answerOrder = verify.quizAnswerOrder.split(",");
-					
-					const question = quizQuestions[quizOrder[verify.question]];
-					const answer = answerOrder[quizAnswer];
-					const { components } = interaction.message;
-					const component = components[0].components.find(c => c.customId === interaction.customId);
+					if (question.answer)
+						result = await question.answer(interaction.channel, interaction.member, answer);
 
-					if (!question.correct.includes(parseInt(answer))) {
+					addAnswer(interaction.user.id, question.message, (result ? "" : "[❌] ") + question.answers[Number(answer)]);
+	
+					if (!result) {
 						component.data.style = ButtonStyle.Danger;
 						component.data.disabled = true;
-
+	
 						await interaction.editReply({ components });
+	
+						updateVerify(interaction.user.id, "wrongCount", ++verify.wrongCount);
+	
+						if (verify.wrongCount === 12) {
+							await critical(interaction.user, "Вы заблокированы!", "Вы неправильно ответили слишком много раз!")
+								.catch(() => null);
+			
+							await interaction.member.ban({reason: `Слишком много неправильных ответов`});
+						}
 						
-						if (++verify.wrongCount >= 3) {
-							updateVerify(interaction.user.id, "wrongCount", 0);
+						if (verify.wrongCount % 3 === 0) {
 							updateVerify(interaction.user.id, "mutedUntil", Date.now() + 5 * 60e3);
-
+	
 							await critical(interaction.channel, "Эй!", "Дорогой Друг,ознакомься с правилами! Можешь повторить попытку через 5 минут :)");
 							await interaction.member.timeout(5 * 60e3, "Правила не читал ¯\\_(ツ)_/¯");
-
-							return;
 						}
-
-						updateVerify(interaction.user.id, "wrongCount", verify.wrongCount);
-
+	
 						return;
 					}
-
-					component.data.style = ButtonStyle.Success;
-
-					for (const component of components[0].components) component.data.disabled = true;
-					await interaction.editReply({ components });
-					
-					
-					if (verify.question >= quizQuestions.length-1) return !settings.serverless ? await askForPassword(interaction) : await sendForConfirmation(interaction);
-
-
-					updateVerify(interaction.user.id, "question", ++verify.question);
-			
-					sendQuestion(interaction.channel, verify);
-
 				} catch (e) {
 					console.error(e);
-					interaction.followUp({
-						ephemeral: true,
-						embeds: [
-							critical(null, "Ошибка обработки ответа!", `Информация: \`${e.message}\``, {embed: true})
-						]
-					})
+					critical(interaction.channel, "Ошибка обработки ответа!", `Информация: \`${e.message}\``);
+					return;
 				}
+
+				component.data.style = ButtonStyle.Success;
+				for (const component of components[0].components)
+					component.data.disabled = true;
+
+				await interaction.editReply({ components });
+
+				if (verify.question >= questions.length - 1)
+					return !settings.serverless ? await askForPassword(interaction) : await sendForConfirmation(interaction);
+
+				updateVerify(interaction.user.id, "question", ++verify.question);
+				await sendQuestion(interaction.channel, verify);
 			}
 		}
 		

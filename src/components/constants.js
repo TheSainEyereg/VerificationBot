@@ -9,8 +9,9 @@ const Colors = {
 
 const States = {
 	ShouldEnd: -1,
-	OnText: 0,
-	OnQuiz: 1,
+	OnAnswers: 0,
+	// OnText: 0,
+	// OnQuiz: 1,
 	OnPassword: 2,
 	OnConfirmation: 3
 };

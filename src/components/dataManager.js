@@ -19,8 +19,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS "verify" (
 	"openUntil" INTEGER,
 	"mutedUntil" INTEGER,
 	"question" INTEGER,
-	"quizOrder" TEXT,
-	"quizAnswerOrder" TEXT,
+	"answerOrder" TEXT,
 	"wrongCount" TEXT,
 	"answers" TEXT,
 	"messageId" TEXT,
@@ -117,8 +116,8 @@ function getVerify(id) {
 	return db.prepare("SELECT * FROM verify WHERE userId = ?").get(id);
 }
 
-function createVerify(id, channelId, openUntil, quizOrder) {
-	db.prepare("INSERT OR IGNORE INTO verify(userId, channelId, openUntil, quizOrder, question, state, wrongCount) VALUES(?, ?, ?, ?, 0, 0, 0)").run(id, channelId, openUntil, quizOrder);
+function createVerify(id, channelId, openUntil) {
+	db.prepare("INSERT OR IGNORE INTO verify(userId, channelId, openUntil, question, state, wrongCount) VALUES(?, ?, ?, 0, 0, 0)").run(id, channelId, openUntil);
 }
 
 function findVerify(item, value, all) {
