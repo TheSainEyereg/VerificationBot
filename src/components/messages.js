@@ -1,9 +1,9 @@
-const {ColorResolvable, EmbedBuilder, Message, TextChannel, GuildMember, User} = require("discord.js");
+const {ColorResolvable, EmbedBuilder, Message, GuildTextBasedChannel, GuildMember, User} = require("discord.js");
 const { Colors } = require("./constants");
 
 /**
  * Regular message
- * @param {Message | TextChannel | GuildMember | User} source - A message or text channel to send the message to
+ * @param {Message | GuildTextBasedChannel | GuildMember | User} source - A message or text channel to send the message to
  * @param {String} title - Titile
  * @param {String} description - Description
  * @param {Object} [opt] - Optional parameters 
@@ -26,7 +26,7 @@ function regular(source, title, description, opt) {
 }
 /**
  * Message with a link
- * @param {Message|TextChannel} source - A message or text channel to send the message to
+ * @param {Message | GuildTextBasedChannel} source - A message or text channel to send the message to
  * @param {String} url - The url to send
  * @param {String} text - The text for the url
  * @param {Object} [opt] - Optional parameters
@@ -36,7 +36,7 @@ function regular(source, title, description, opt) {
  * @returns {Promise<Message> | EmbedBuilder}
  */
 function url(source, url, text, opt) {
-	/** @type {TextChannel} */
+	/** @type {GuildTextBasedChannel} */
 	const channel = source.channel || source;
 	const embed = new EmbedBuilder({
 		color: Colors.Url,
@@ -49,7 +49,7 @@ function url(source, url, text, opt) {
 
 /**
  * Success message
- * @param {Message|TextChannel} source - A message or text channel to send the message to
+ * @param {Message | GuildTextBasedChannel} source - A message or text channel to send the message to
  * @param {String} title - Titile
  * @param {String} description - Description
  * @param {Object} [opt] - Optional parameters 
@@ -63,7 +63,7 @@ function success(source, title, description, opt) {
 }
 /**
  * Warning message
- * @param {Message|TextChannel} source - A message or text channel to send the message to
+ * @param {Message | GuildTextBasedChannel} source - A message or text channel to send the message to
  * @param {String} title - Titile
  * @param {String} description - Description
  * @param {Object} [opt] - Optional parameters 
@@ -77,7 +77,7 @@ function warning(source, title, description, opt) {
 }
 /**
  * Critical message
- * @param {Message|TextChannel} source - A message or text channel to send the message to
+ * @param {Message | GuildTextBasedChannel} source - A message or text channel to send the message to
  * @param {String} title - Titile
  * @param {String} description - Description
  * @param {Object} [opt] - Optional parameters 
@@ -92,7 +92,7 @@ function critical(source, title, description, opt) {
 
 /**
  * Question message
- * @param {Message|TextChannel} source - A message or text channel to send the message to
+ * @param {Message | GuildTextBasedChannel} source - A message or text channel to send the message to
  * @param {String} title - Titile
  * @param {String} description - Description
  * @param {Object} [opt] - Optional parameters 

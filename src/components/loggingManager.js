@@ -1,7 +1,6 @@
 const { Guild, EmbedBuilder, ButtonInteraction } = require("discord.js");
 const { channels: { logs } } = require("../config");
 const { Colors } = require("./constants");
-const { getUser } = require("./dataManager");
 
 /**
  * 
@@ -13,11 +12,9 @@ const { getUser } = require("./dataManager");
 async function sendEmbedLog(guild, embed, content) {
 	if (!logs) return;
 
-	try {
-		const channel = await guild.channels.fetch(logs);
-		
-		await channel.send(Object.assign({embeds: [embed]}, content && { content }));
-	} catch (e) {}
+	await guild.channels.fetch(logs)
+		.then(async channel => channel.send({embeds: [embed], content}))
+		.catch(() => null);
 }
 
 /**
@@ -52,7 +49,7 @@ function logInspection(interaction, verify) {
 				value: `<@${interaction.user.id}> <t:${Math.floor( interaction.createdTimestamp / 1000 )}>`,
 			}
 		]
-	}))	
+	}))
 }
 
 
