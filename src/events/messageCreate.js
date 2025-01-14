@@ -19,8 +19,11 @@ module.exports = {
 		if (!verify || verify.state !== States.OnAnswers || verify.channelId !== message.channel.id)
 			return;
 
-		const question = questions[verify.question];
-		
+		const questionOrder = verify.questionOrder.split(",");
+		const question = questions[questionOrder[verify.question]];
+
+		if (question.type !== "text")
+			return;
 
 		if (message.content.length === 0)
 			return warning(message, "Ответ не может быть пустым!");

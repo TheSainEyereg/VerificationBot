@@ -93,15 +93,14 @@ async function checkForChannel(guild, id) {
  */
 async function sendQuestion(channel, verify) {
 	if (verify.state === States.OnAnswers) {
-		const question = questions[verify.question];
+		const questionOrder = verify.questionOrder.split(",");
+		const question = questions[questionOrder[verify.question]];
 
 		const embed = regular(
 			null,
 			verify.question === 0
 				? "Начало верификации"
-				: verify.question === questions.length - 1
-					? `Вопрос ${verify.question + 1} - Последний вопрос`
-					: `Вопрос ${verify.question + 1}`,
+				: `Вопрос ${verify.question} ${verify.question === questions.length - 1 ? "- Последний вопрос" : ""}`,
 			question.message,
 			{ image: question.image, embed: true }
 		)
@@ -114,8 +113,18 @@ async function sendQuestion(channel, verify) {
 		}
 	
 		if (question.type === "quiz") {
-			const answerOrder = Object.keys(question.answers)
-			// 	.sort(() => Math.random() - 0.5);
+			let shuffleEnabled = false;
+			for (let i = verify.question; i >= 0; i--) {
+				const question = questions[i];
+
+				if (question.action?.startsWith("shuffle")) {
+					shuffleEnabled = question.action === "shuffle_start";
+					break;
+				}
+			}
+
+			// I hate to do this, but codebase already fucked up
+			const answerOrder = shuffleEnabled ? Object.keys(question.answers).sort(() => Math.random() - 0.5) : Object.keys(question.answers);
 	
 			const components = answerOrder.map((answer, i) => {
 				const answerEntry = question.answers[Number(answer)];
@@ -215,14 +224,29 @@ async function startConversation(guild, user) {
 	});
 
 	if (!userVerify) {
-		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60e3);
+		const questionOrder = Object.keys(questions);
+		let shuffleStart = null;
+		for (let i = 0; i < questions.length; i++) {
+			if (questions[i].action === "shuffle_start") {
+				shuffleStart = i;
+			} else if (questions[i].action === "shuffle_end" || i === questions.length - 1) {
+				if (shuffleStart !== null) {
+					const toSort = questionOrder.slice(shuffleStart, i + 1);
+					toSort.sort(() => Math.random() - 0.5);
+					questionOrder.splice(shuffleStart, i + 1 - shuffleStart, ...toSort);
+					shuffleStart = null;
+				}
+			}
+		}
+
+		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60e3, questionOrder.join(","));
 		await regular(
 			channel,
 			"Добро пожаловать!",
 			"Мы начнем с анкеты, где вам предстоит ответить на несколько вопросов. Анкета будет автоматически удалена через 48 часов! Давайте начнем!",
 			{ content: user.toString() }
 		);
-		await sendQuestion(channel, { question: 0, state: States.OnAnswers });
+		await sendQuestion(channel, { question: 0, state: States.OnAnswers, questionOrder: questionOrder.join(",") });
 		return;
 	}
 
@@ -396,7 +420,7 @@ async function sendForConfirmation(interaction) {
 	await success(
 		interaction.channel,
 		"Поздравляю, вы прошли систему анкетирования!",
-		"Теперь дождитесь ответа ответственного сотрудника для подтверждения! И да, ваша анкета не будет закрыта до тех пор, пока вас не подтвердят :)"
+		"Теперь дождитесь ответа от проверяющего для подтверждения вашей анкеты. Напоминаем, что упоминать проверяющего не нужно, так как это уже сделал наш бот. Если проверяющий откажется принять вас на сервер, он обязательно укажет причину, и администрация рассмотрит её. И да, ваша анкета не будет закрыта до тех пор, пока вас не подтвердят :)"
 	);
 }
 

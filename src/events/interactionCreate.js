@@ -103,7 +103,10 @@ module.exports = {
 				});
 
 				await interaction.deferUpdate();
-				const question = questions[verify.question];
+
+				const questionOrder = verify.questionOrder.split(",");
+				const question = questions[questionOrder[verify.question]];
+
 				if (question.type !== "quiz")
 					return;
 
@@ -125,7 +128,8 @@ module.exports = {
 					if (!verify || verify.state === States.ShouldEnd)
 						return await endConversation(interaction.guild, interaction.user);
 
-					addAnswer(interaction.user.id, question.message, (result ? "" : "[❌] ") + question.answers[Number(answer)]);
+					const answerEntry = question.answers[Number(answer)];
+					addAnswer(interaction.user.id, question.message, (result ? "" : "[❌] ") + (typeof answerEntry === "string" ? answerEntry : answerEntry.text));
 	
 					if (!result) {
 						if (component.data.style === ButtonStyle.Primary)

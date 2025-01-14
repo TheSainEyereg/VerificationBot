@@ -12,11 +12,9 @@ const { Colors } = require("./constants");
 async function sendEmbedLog(guild, embed, content) {
 	if (!logs) return;
 
-	try {
-		const channel = await guild.channels.fetch(logs);
-		
-		await channel.send(Object.assign({embeds: [embed]}, content && { content }));
-	} catch (e) {}
+	await guild.channels.fetch(logs)
+		.then(async channel => channel.send({embeds: [embed], content}))
+		.catch(() => null);
 }
 
 /**
