@@ -123,7 +123,7 @@ async function mentionUnmuted(guild) {
 			continue;
 
 		await channel.messages.delete(verify.mutedMessageId);
-		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`});
+		await success(channel, "Ваш мут истек!", "Вы можете продолжать проходить анкету, просто ответьте на вопрос, который был отправлен вам ранее.", {content: `<@${verify.userId}>`, thumbnail: settings.logoUrl });
 	}
 }
 

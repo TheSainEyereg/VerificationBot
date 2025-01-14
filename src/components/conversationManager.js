@@ -11,7 +11,7 @@ const {
 	ChannelType,
 	PermissionFlagsBits,
 } = require("discord.js");
-const { channels, roles } = require("../config");
+const { channels, roles, settings } = require("../config");
 const {
 	deleteVerify,
 	getAnswers,
@@ -244,7 +244,7 @@ async function startConversation(guild, user) {
 			channel,
 			"Добро пожаловать!",
 			"Мы начнем с анкеты, где вам предстоит ответить на несколько вопросов. Анкета будет автоматически удалена через 48 часов! Давайте начнем!",
-			{ content: user.toString() }
+			{ content: user.toString(), thumbnail: settings.logoUrl }
 		);
 		await sendQuestion(channel, { question: 0, state: States.OnAnswers, questionOrder: questionOrder.join(",") });
 		return;
@@ -257,7 +257,7 @@ async function startConversation(guild, user) {
 			channel,
 			"Все готово!",
 			"Канал с вашей анкетой был восстановлен. Пожалуйста, дождитесь подтверждения от проверяющего.",
-			{ content: user.toString() }
+			{ content: user.toString(), thumbnail: settings.logoUrl }
 		);
 		return;
 	}
@@ -270,7 +270,7 @@ async function startConversation(guild, user) {
 		)}ч ${Math.floor(
 			((userVerify.openUntil - Date.now()) / (1000 * 60)) % 60
 		)}м для завершения анкеты.`,
-		{ content: user.toString() }
+		{ content: user.toString(), thumbnail: settings.logoUrl }
 	);
 	await sendQuestion(channel, userVerify);
 }
@@ -420,7 +420,8 @@ async function sendForConfirmation(interaction) {
 	await success(
 		interaction.channel,
 		"Поздравляю, вы прошли систему анкетирования!",
-		"Теперь дождитесь ответа от проверяющего для подтверждения вашей анкеты. Напоминаем, что упоминать проверяющего не нужно, так как это уже сделал наш бот. Если проверяющий откажется принять вас на сервер, он обязательно укажет причину, и администрация рассмотрит её. И да, ваша анкета не будет закрыта до тех пор, пока вас не подтвердят :)"
+		"Теперь дождитесь ответа от проверяющего для подтверждения вашей анкеты. Напоминаем, что упоминать проверяющего не нужно, так как это уже сделал наш бот. Если проверяющий откажется принять вас на сервер, он обязательно укажет причину, и администрация рассмотрит её. И да, ваша анкета не будет закрыта до тех пор, пока вас не подтвердят :)",
+		{ thumbnail: settings.logoUrl }
 	);
 }
 

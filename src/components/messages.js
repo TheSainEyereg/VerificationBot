@@ -9,8 +9,9 @@ const { Colors } = require("./constants");
  * @param {Object} [opt] - Optional parameters 
  * @param {Boolean} opt.embed - Should I return embed
  * @param {ColorResolvable} opt.color - Color
- * @param {string} opt.image - image url
  * @param {string} opt.content - message content
+ * @param {string} opt.image - image url
+ * @param {string} opt.thumbnail - image url
  * @returns {Promise<Message> | EmbedBuilder}
  */
 function regular(source, title, description, opt) {
@@ -21,6 +22,7 @@ function regular(source, title, description, opt) {
 	title && embed.setTitle(title);
 	description && embed.setDescription(description);
 	opt?.image && embed.setImage(opt.image);
+	opt?.thumbnail && embed.setThumbnail(opt.thumbnail);
 	if (opt?.embed) return embed;
 	return channel.send(Object.assign({embeds: [embed]}, opt?.content && {content: opt.content}, )).catch(() => {});
 }
@@ -56,6 +58,8 @@ function url(source, url, text, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
+ * @param {string} opt.image - image url
+ * @param {string} opt.thumbnail - image url
  * @returns {Promise<Message> | EmbedBuilder}
  */
 function success(source, title, description, opt) {
@@ -70,6 +74,8 @@ function success(source, title, description, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
+ * @param {string} opt.image - image url
+ * @param {string} opt.thumbnail - image url
  * @returns {Promise<Message> | EmbedBuilder}
  */
 function warning(source, title, description, opt) {
@@ -84,6 +90,8 @@ function warning(source, title, description, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
+ * @param {string} opt.image - image url
+ * @param {string} opt.thumbnail - image url
  * @returns {Promise<Message> | EmbedBuilder}
  */
 function critical(source, title, description, opt) {
@@ -99,6 +107,8 @@ function critical(source, title, description, opt) {
  * @param {Boolean} opt.circle - Replaces emoji with a solid color emoji
  * @param {Boolean} opt.embed - Should I return embed
  * @param {string} opt.content - message content
+ * @param {string} opt.image - image url
+ * @param {string} opt.thumbnail - image url
  * @returns {Promise<Message> | EmbedBuilder}
  */
 function question(source, title, description, opt) {

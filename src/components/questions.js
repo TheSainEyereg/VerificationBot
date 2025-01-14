@@ -100,7 +100,12 @@ const questions = [
 			if (Number(answer) === 0) {
 				updateVerify(member.id, "state", States.ShouldEnd);
 
-				await critical(member.user, "Вы ешё слишком молоды, чтобы играть на сервере!", "Напишите Olejka#4300 для оспаривания блокировки.")
+				await critical(
+					member.user,
+					"Вы ешё слишком молоды, чтобы играть на сервере!",
+					"Напишите Olejka#4300 для оспаривания блокировки.",
+					{ thumbnail: settings.logoUrl }
+				)
 					.catch(() => null);
 	
 				await member.ban({reason: `Слишком молодой`});
@@ -124,7 +129,12 @@ const questions = [
 		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) === 1) {
-				await warning(channel, "Потребуется подтверждение", "Во избежании социальной манипуляции, проверяющий или администрация может потребовать подтверждение вашего пола через доп вопросы");
+				await warning(
+					channel,
+					"Потребуется подтверждение",
+					"Во избежании социальной манипуляции, проверяющий или администрация может потребовать подтверждение вашего пола через доп вопросы",
+					{ thumbnail: settings.logoUrl }
+				);
 
 				try {
 					await member.roles.add(roles.woman)
@@ -164,7 +174,12 @@ const questions = [
 		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) !== 0) {
-				await warning(channel, "Обязательно скачай мод!", "[Скачать для Fabric (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=fabric) \n[Скачать для Forge (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=forge) ");
+				await warning(
+					channel,
+					"Обязательно скачай мод!",
+					"[Скачать для Fabric (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=fabric) \n[Скачать для Forge (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=forge)",
+					{ thumbnail: settings.logoUrl }
+				);
 			}
 
 			return true;
@@ -236,7 +251,12 @@ const questions = [
 		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) !== 0) {
-				await warning(channel, "Нужно согласиться с правилами!", "Потому что с ними не дружить не получится.");
+				await warning(
+					channel,
+					"Нужно согласиться с правилами!",
+					"Потому что с ними не дружить не получится.",
+					{ thumbnail: settings.logoUrl }
+				);
 				return false;
 			}
 

@@ -142,7 +142,12 @@ module.exports = {
 						updateVerify(interaction.user.id, "wrongCount", ++verify.wrongCount);
 	
 						if (verify.wrongCount === 12) {
-							await critical(interaction.user, "Вы заблокированы!", "Вы неправильно ответили слишком много раз!")
+							await critical(
+								interaction.user,
+								"Вы заблокированы!",
+								"Вы неправильно ответили слишком много раз!",
+								{ thumbnail: settings.logoUrl }
+							)
 								.catch(() => null);
 			
 							await interaction.member.ban({reason: `Слишком много неправильных ответов`});
@@ -153,7 +158,12 @@ module.exports = {
 	
 							await interaction.member.timeout(5 * 60e3, "Правила не читал ¯\\_(ツ)_/¯");
 
-							const mutedMessage = await critical(interaction.channel, "Эй!", "Дорогой Друг,ознакомься с правилами! Можешь повторить попытку через 5 минут :)");
+							const mutedMessage = await critical(
+								interaction.channel,
+								"Эй!",
+								"Дорогой Друг,ознакомься с правилами! Можешь повторить попытку через 5 минут :)",
+								{ thumbnail: settings.logoUrl }
+							);
 							updateVerify(interaction.user.id, "mutedMessageId", mutedMessage.id);
 						}
 	
@@ -249,9 +259,13 @@ module.exports = {
 
 				await interaction.deferUpdate();
 				
-				try {
-					await critical(member, "К сожалению, ваша заявка была отклонена, всего вам хорошего!", `Модератор: \`${interaction.user.tag}\``);
-				} catch (e) {}
+				await critical(
+					member,
+					"К сожалению, ваша заявка была отклонена, всего вам хорошего!",
+					`Причина: \`${reason}\`\nМодератор: \`${interaction.user.tag}\``,
+					{ thumbnail: settings.logoUrl }
+				)
+					.catch(() => null);
 					
 				await member.ban({reason: `Заблокирован ${interaction.user.tag} через систему подачи заявок (${reason})`});
 				
