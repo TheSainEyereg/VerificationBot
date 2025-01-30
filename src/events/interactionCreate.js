@@ -8,6 +8,7 @@ const { addToWhitelist, register } = require("../components/rconManager");
 const { roles, settings } = require("../config");
 const { logInspection } = require("../components/loggingManager");
 const questions = require("../components/questions");
+const { generatePassword } = require("../components/actionManager");
 
 
 module.exports = {
@@ -191,33 +192,60 @@ module.exports = {
 			}
 		}
 		
-		if (interaction.customId === "requestPassword") {
+		if (interaction.customId === "generatePassword" || interaction.customId === "requestPassword") {
 			const verify = findVerify("channelId", interaction.channel.id);
 			if (!verify) return;
 
 			if (verify.userId !== interaction.user.id) return interaction.reply({
 				ephemeral: true,
 				embeds: [
-					warning(null, "Ошибка доступа!", "Вводить пароль только может пользователь проходящий анкету!", {embed: true})
+					warning(null, "Ошибка доступа!", "Устанавливать пароль только может пользователь проходящий анкету!", {embed: true})
 				]
 			});
 
-			const modal = new ModalBuilder({
-				title: "Запрос пароля",
-				customId: "passwordModal"
-			});
+			if (interaction.customId === "requestPassword") {
+				const modal = new ModalBuilder({
+					title: "Запрос пароля",
+					customId: "passwordModal"
+				});
+	
+				const password = new TextInputBuilder({
+					customId: "password",
+					label: "Введите пароль для сервера",
+					style: TextInputStyle.Short,
+					minLength: 10,
+					maxLength: 30
+				})
+	
+				modal.addComponents(new ActionRowBuilder().addComponents(password));
+				
+				await interaction.showModal(modal);
+			} else {
+				await interaction.deferUpdate();
 
-			const password = new TextInputBuilder({
-				customId: "password",
-				label: "Введите пароль для сервера",
-				style: TextInputStyle.Short,
-				minLength: 10,
-				maxLength: 30
-			})
+				const { components } = interaction.message;
+				for (const component of components[0].components)
+					component.data.disabled = true;
 
-			modal.addComponents(new ActionRowBuilder().addComponents(password));
-			
-			await interaction.showModal(modal);
+				await interaction.editReply({ components });
+
+				const password = generatePassword(verify.nickname);
+
+				updateVerify(interaction.user.id, "tempPassword", password);
+
+				await sendForConfirmation(interaction);
+
+				await interaction.followUp({
+					ephemeral: true,
+					embeds: [
+						warning(null, "Пароль cгенерирован!", `Ваш пароль: \`\`\`\n${password}\n\`\`\`\nСохраните его в безопасном месте!`, {embed: true})
+					],
+					files: [{
+						name: "passwordChunky.txt",
+						attachment: Buffer.from(password)
+					}]
+				})
+			}
 		}
 
 
@@ -238,13 +266,17 @@ module.exports = {
 				await interaction.deferUpdate();
 
 				const { components } = interaction.message;
+				for (const component of components[0].components)
+					component.data.disabled = true;
+
 				const component = components[0].components.find(c => c.customId === "requestPassword");
 				if (component) {
 					component.data.disabled = true;
 					component.data.style = ButtonStyle.Success;
 					component.data.label = "Пароль принят!";
-					await interaction.editReply({ components });
 				}
+
+				await interaction.editReply({ components });
 
 				updateVerify(interaction.user.id, "tempPassword", password);
 

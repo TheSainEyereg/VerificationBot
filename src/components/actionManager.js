@@ -135,6 +135,56 @@ function mentionUbanned(guild) {
 
 } // Date.now() > user.banedUntil
 
+/**
+ * 
+ * @param {String} playerName 
+ * @returns 
+ */
+function generatePassword(playerName) {
+	const serverName = "Chunky";
+	const randomWords = [
+		"apple",
+		"bear",
+		"cat",
+		"dog",
+		"eagle",
+		"fish",
+		"goat",
+		"hare",
+		"ice",
+		"jazz",
+		"kite",
+		"lion",
+		"moon",
+		"nest",
+		"owl",
+		"puma",
+		"quail",
+		"rose",
+		"sun",
+		"tree",
+		"unicorn",
+		"vase",
+		"wolf",
+		"xylo",
+		"yarn",
+		"zebra",
+	];
+
+	const randomChars = (length) => length > 0 ? Array.from({ length }, () => String.fromCharCode(Math.floor(Math.random() * 94) + 33)).join("") : "";
+
+	const passwordParts = [
+		playerName.slice(0, 30 - 10 - serverName.length - 8),
+		randomWords[Math.floor(Math.random() * randomWords.length)],
+		randomWords[Math.floor(Math.random() * randomWords.length)],
+		serverName,
+		...randomChars(8),
+	];
+
+	passwordParts.sort(() => Math.random() - 0.5);
+
+	return passwordParts.join("");
+};
 
 async function pingStatus(client) {
 	if (kuma?.pushUrl)
@@ -142,6 +192,7 @@ async function pingStatus(client) {
 }
 
 module.exports = {
+	generatePassword,
 	pingStatus, syncWhitelist,
 	freeUserName, changeUserName,
 	closeOverdue, mentionUnmuted, mentionUbanned, removeApprovedRoles, cleanUpCategory

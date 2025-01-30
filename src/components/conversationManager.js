@@ -154,7 +154,7 @@ async function sendQuestion(channel, verify) {
 				warning(
 					null,
 					"Установка пароля",
-					"Для защиты вашего аккаунта нам нужно, чтобы вы установили временный пароль. После подтверждения заявки этот пароль будет использоваться для входа на сервер. Пароль можно изменить через команду `/changepassword <старый пароль> <новый пароль>`.",
+					"Для защиты вашего аккаунта нам нужно установить временный пароль. После подтверждения заявки этот пароль будет использоваться для входа на сервер. Пароль можно изменить через команду `/changepassword <старый пароль> <новый пароль>`.",
 					{ embed: true }
 				),
 			],
@@ -162,9 +162,14 @@ async function sendQuestion(channel, verify) {
 				new ActionRowBuilder({
 					components: [
 						new ButtonBuilder({
+							customId: "generatePassword",
+							label: "Сгенерировать случайный пароль",
+							style: ButtonStyle.Success,
+						}),
+						new ButtonBuilder({
 							customId: "requestPassword",
-							label: "Ввести пароль",
-							style: ButtonStyle.Primary,
+							label: "Ввести пароль вручную",
+							style: ButtonStyle.Secondary,
 						}),
 					],
 				}),
@@ -318,12 +323,12 @@ async function askForPassword(interaction) {
 		(userVerify.state = States.OnPassword)
 	);
 
-	await regular(
-		verifyChannel,
-		"Завершающий шаг!",
-		"Установите временный пароль для защиты вашего аккаунта. После подтверждения заявки он станет активным.",
-		{ content: interaction.user.toString() }
-	);
+	// await regular(
+	// 	verifyChannel,
+	// 	"Завершающий шаг!",
+	// 	"Установка временныого пароля для защиты вашего аккаунта. После подтверждения заявки он станет активным.",
+	// 	{ content: interaction.user.toString() }
+	// );
 	await sendQuestion(verifyChannel, userVerify);
 }
 

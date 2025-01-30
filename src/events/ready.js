@@ -1,11 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const { Client, REST, Events, Collection, ActivityType } = require("discord.js");
+const { Client, Events, Collection, ActivityType } = require("discord.js");
 const { regular } = require("../components/messages");
 const { getRulesMessages, getRulesMessage, setRulesMessage, getAllVerify, getTimestamp, saveTimestamp, updateVerify, deleteRulesMessage } = require("../components/dataManager");
 const { endConversation, startConversation } = require("../components/conversationManager");
 const { isUserReactedOther, isUserReactedAll, unreactAll } = require("../components/reactionManager");
-const { token, channels, rules, guildId } = require("../config");
+const { settings, channels, rules, guildId } = require("../config");
 const { pingStatus, closeOverdue, mentionUnmuted, removeApprovedRoles, cleanUpCategory } = require("../components/actionManager");
 const { closeRcon } = require("../components/rconManager");
 
@@ -18,7 +18,7 @@ async function sendRuleMessage(channel, type) {
 						null,
 						rules[type].title,
 						rules[type].file ? fs.readFileSync(rules[type].file).toString() : rules[type].text,
-						{embed: true}
+						{ thumbnail: settings.logoUrl, embed: true }
 					)
 				]
 			},

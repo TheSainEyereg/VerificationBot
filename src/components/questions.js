@@ -173,14 +173,12 @@ const questions = [
 			"Нет"
 		],
 		answer: async (channel, member, answer) => {
-			if (Number(answer) !== 0) {
-				await warning(
-					channel,
-					"Обязательно скачай мод!",
-					"[Скачать для Fabric (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=fabric) \n[Скачать для Forge (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=forge)",
-					{ thumbnail: settings.logoUrl }
-				);
-			}
+			await warning(
+				channel,
+				Number(answer) === 0 ? "Если вы ответили \"Да\", но не скачали мод, сделайте это сейчас" : "Обязательно скачай мод!",
+				"[Скачать для Fabric (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=fabric) \n[Скачать для Forge (Modrinth)](https://modrinth.com/plugin/plasmo-voice/versions?g=1.21.4&g=1.21.3&g=1.21.1&g=1.21&g=1.21.2&l=forge)",
+				{ thumbnail: settings.logoUrl }
+			);
 
 			return true;
 		},
