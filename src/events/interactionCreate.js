@@ -238,11 +238,11 @@ module.exports = {
 				await interaction.followUp({
 					ephemeral: true,
 					embeds: [
-						warning(null, "Пароль cгенерирован!", `Ваш пароль: \`\`\`\n${password}\n\`\`\`\nСохраните его в безопасном месте!`, {embed: true})
+						warning(null, "Пароль cгенерирован!", `Это ваш пароль для доступа к серверу Chunky. Скачайте этот .txt файл и сохраните его, чтобы не потерять.\nВаш пароль: \`\`\`\n${password}\n\`\`\``, { embed: true })
 					],
 					files: [{
 						name: "passwordChunky.txt",
-						attachment: Buffer.from(password)
+						attachment: Buffer.from(`Пароль: ${password}\nНик: ${verify.nickname}`)
 					}]
 				})
 			}
