@@ -163,12 +163,12 @@ async function sendQuestion(channel, verify) {
 					components: [
 						new ButtonBuilder({
 							customId: "generatePassword",
-							label: "Сгенерировать случайный пароль",
+							label: "🔄 Сгенерировать случайный пароль",
 							style: ButtonStyle.Success,
 						}),
 						new ButtonBuilder({
 							customId: "requestPassword",
-							label: "Ввести пароль вручную",
+							label: "📝 Ввести пароль вручную",
 							style: ButtonStyle.Secondary,
 						}),
 					],
