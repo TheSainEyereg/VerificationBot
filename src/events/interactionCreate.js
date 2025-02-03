@@ -2,8 +2,8 @@ const { Events, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, Act
 const { hasAccess } = require("../components/checkManager");
 const { findVerify, updateVerify, createUser, getVerify, getUser, addAnswer } = require("../components/dataManager");
 const { States, RegExps } = require("../components/constants");
-const { critical, warning } = require("../components/messages");
-const { endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/conversationManager");
+const { success, critical, warning } = require("../components/messages");
+const { startConversation, endConversation, sendQuestion, askForPassword, sendForConfirmation } = require("../components/conversationManager");
 const { addToWhitelist, register } = require("../components/rconManager");
 const { roles, settings } = require("../config");
 const { logInspection } = require("../components/loggingManager");
@@ -89,6 +89,33 @@ module.exports = {
 						]
 					})
 				}
+			}
+
+			if (interaction.customId.startsWith("start")) {
+				const { guild, user } = interaction;
+
+				await interaction.deferReply({ ephemeral: true });
+
+				if (getUser(user.id)) return interaction.editReply({
+					embeds: [
+						warning(null, "Анкета уже пройдена", "Вы уже прошли процедуру подтверждения!", {embed: true})
+					]
+				});
+
+				const verify = getVerify(user.id);
+				if (verify) return interaction.editReply({
+					embeds: [
+						warning(null, "Анкета уже открыта", `Канал с анкетой уже существует!\nКанал: <#${verify.channelId}>`, {embed: true})
+					]
+				});
+
+				const channel = await startConversation(guild, user);
+
+				return interaction.editReply({
+					embeds: [
+						success(null, "Анкета открыта", `Для вас был создан канал с анкетой!\nКанал: <#${channel.id}>`, {embed: true})
+					]
+				});
 			}
 
 			if (interaction.customId.startsWith("answer")) {

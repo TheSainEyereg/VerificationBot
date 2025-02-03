@@ -1,15 +1,45 @@
+const fs = require("fs");
 const fetch = require("node-fetch");
-const { kuma, settings, channels, roles } = require("../config");
+const { kuma, settings, channels, roles, rules } = require("../config");
 const { States } = require("./constants");
 const { endConversation, checkForChannel } = require("./conversationManager");
-const { Guild, ChannelType } = require("discord.js");
-const { getAllVerify, getUserByName, findVerify, updateUserName, updateVerify, getAllUsers, getCategories } = require("./dataManager");
-const { warning, success } = require("./messages");
+const { Guild, ChannelType, GuildTextBasedChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { setRulesMessage, getAllVerify, getUserByName, findVerify, updateUserName, updateVerify, getAllUsers, getCategories } = require("./dataManager");
+const { regular, warning, success } = require("./messages");
 const { unreactAll } = require("./reactionManager");
 const { removeFromWhitelist, addToWhitelist, getWhitelist } = require("./rconManager");
 
-
-function syncWhitelist() {}
+/**
+ * 
+ * @param {GuildTextBasedChannel} channel 
+ * @param {String} type 
+ */
+async function sendRuleMessage(channel, type) {
+	const message = await channel.send({
+		embeds: [
+			regular(
+				null,
+				rules[type].title,
+				rules[type].file ? fs.readFileSync(rules[type].file).toString() : rules[type].text,
+				{ thumbnail: settings.logoUrl, embed: true }
+			)
+		],
+		...rules[type].attachment && {files: [rules[type].attachment]},
+		components: [
+			new ActionRowBuilder({
+				components: [
+					new ButtonBuilder({
+						customId: "start",
+						label: "📝 Заполнить aнкету",
+						style: ButtonStyle.Primary
+					}),
+				],
+			}),
+		],
+	});
+	// await message.react("✅");
+	setRulesMessage(type, message);
+}
 
 /**
  * @param {Guild} guild 
@@ -192,8 +222,9 @@ async function pingStatus(client) {
 }
 
 module.exports = {
-	generatePassword,
-	pingStatus, syncWhitelist,
+	sendRuleMessage,
 	freeUserName, changeUserName,
-	closeOverdue, mentionUnmuted, mentionUbanned, removeApprovedRoles, cleanUpCategory
+	closeOverdue, mentionUnmuted, mentionUbanned, removeApprovedRoles, cleanUpCategory,
+	generatePassword,
+	pingStatus
 }

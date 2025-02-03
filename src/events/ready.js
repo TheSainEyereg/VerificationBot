@@ -1,33 +1,12 @@
 const fs = require("fs");
 const path = require("path");
 const { Client, Events, Collection, ActivityType } = require("discord.js");
-const { regular } = require("../components/messages");
-const { getRulesMessages, getRulesMessage, setRulesMessage, getAllVerify, getTimestamp, saveTimestamp, updateVerify, deleteRulesMessage } = require("../components/dataManager");
+const { getRulesMessages, getRulesMessage, getAllVerify, getTimestamp, saveTimestamp, updateVerify, deleteRulesMessage } = require("../components/dataManager");
 const { endConversation, startConversation } = require("../components/conversationManager");
 const { isUserReactedOther, isUserReactedAll, unreactAll } = require("../components/reactionManager");
-const { settings, channels, rules, guildId } = require("../config");
-const { pingStatus, closeOverdue, mentionUnmuted, removeApprovedRoles, cleanUpCategory } = require("../components/actionManager");
+const { channels, rules, guildId } = require("../config");
+const { sendRuleMessage, pingStatus, closeOverdue, mentionUnmuted, removeApprovedRoles, cleanUpCategory } = require("../components/actionManager");
 const { closeRcon } = require("../components/rconManager");
-
-async function sendRuleMessage(channel, type) {
-	const message = await channel.send(
-		Object.assign(
-			{
-				embeds: [
-					regular(
-						null,
-						rules[type].title,
-						rules[type].file ? fs.readFileSync(rules[type].file).toString() : rules[type].text,
-						{ thumbnail: settings.logoUrl, embed: true }
-					)
-				]
-			},
-			rules[type].attachment && {files: [rules[type].attachment]}
-		)
-	);
-	await message.react("✅");
-	setRulesMessage(type, message);
-}
 
 module.exports = {
 	event: Events.ClientReady,
@@ -43,25 +22,39 @@ module.exports = {
 		const channel = await client.channels.fetch(channels.rules);
 
 		console.log("Checking for rules:");
-		for (const type of Object.keys(rules)) {
-			try {
-				const id = getRulesMessage(type);
-				if (!id) throw 0;
+		// for (const type of Object.keys(rules)) {
+		// 	try {
+		// 		const id = getRulesMessage(type);
+		// 		if (!id) throw 0;
 
-				await channel.messages.fetch(id);
-				console.log(` ● Message "${type}" exists!`);
-			} catch (e) {
-				await sendRuleMessage(channel, type);
-				console.log(` ● Message "${type}" sent!`);
-			}
+		// 		await channel.messages.fetch(id);
+		// 		console.log(` ● Message "${type}" exists!`);
+		// 	} catch (e) {
+		// 		await sendRuleMessage(channel, type);
+		// 		console.log(` ● Message "${type}" sent!`);
+		// 	}
+		// }
+
+		const type = Object.keys(rules)[0];
+		try {
+			const id = getRulesMessage(type);
+			if (!id) throw 0;
+
+			await channel.messages.fetch(id);
+			console.log(` ● Message "${type}" exists!`);
+		} catch (e) {
+			await sendRuleMessage(channel, type);
+			console.log(` ● Message "${type}" sent!`);
 		}
 
 		const allDBMessages = getRulesMessages();
 
-
 		process.stdout.write("Removing old rules...");
 
-		const toDelete = Object.keys(allDBMessages).filter(type => !rules[type]);
+		const toDelete = Object.keys(allDBMessages)
+			// .filter(t => !rules[t]);
+			.filter(t => t !== type);
+
 		for (const type of toDelete) {
 			try {
 				const message = await channel.messages.fetch(allDBMessages[type]);
@@ -76,31 +69,31 @@ module.exports = {
 		process.stdout.write(toDelete.length ? "Done!\n" : "Nothing to delete!\n");
 
 
-		process.stdout.write("Checking reactions for update...");
+		// process.stdout.write("Checking reactions for update...");
 
-		const firstRuleMessageId = Object.values(allDBMessages)[0];
-		const firstRuleMessage = channel.messages.cache.find(m => m.id === firstRuleMessageId);
+		// const firstRuleMessageId = Object.values(allDBMessages)[0];
+		// const firstRuleMessage = channel.messages.cache.find(m => m.id === firstRuleMessageId);
 
-		const firstRuleMessageReactionManager = await firstRuleMessage.reactions.resolve("✅");
-		const firstRuleMessageReactionManagerUsers = await firstRuleMessageReactionManager.users.fetch();
+		// const firstRuleMessageReactionManager = await firstRuleMessage.reactions.resolve("✅");
+		// const firstRuleMessageReactionManagerUsers = await firstRuleMessageReactionManager.users.fetch();
 
-		let shouldFetch = true;
-		for (const user of firstRuleMessageReactionManagerUsers.values()) {
-			if (user.id === client.user.id) continue;
+		// let shouldFetch = true;
+		// for (const user of firstRuleMessageReactionManagerUsers.values()) {
+		// 	if (user.id === client.user.id) continue;
 
-			const isReactedAll = await isUserReactedOther(user, firstRuleMessage, {fetch: shouldFetch});
-			if (shouldFetch) shouldFetch = false;
+		// 	const isReactedAll = await isUserReactedOther(user, firstRuleMessage, {fetch: shouldFetch});
+		// 	if (shouldFetch) shouldFetch = false;
 
-			if (isReactedAll) startConversation(firstRuleMessage.guild, user);
-		}
+		// 	if (isReactedAll) startConversation(firstRuleMessage.guild, user);
+		// }
 
-		for (const onVerifyId of getAllVerify().map(v => v.userId)) {
-			const isUncheckedAll = await isUserReactedAll({id: onVerifyId, client}, {unchecked: true});
+		// for (const onVerifyId of getAllVerify().map(v => v.userId)) {
+		// 	const isUncheckedAll = await isUserReactedAll({id: onVerifyId, client}, {unchecked: true});
 
-			if (isUncheckedAll) endConversation(firstRuleMessage.guild, {id: onVerifyId, client});
-		}
+		// 	if (isUncheckedAll) endConversation(firstRuleMessage.guild, {id: onVerifyId, client});
+		// }
 
-		process.stdout.write("Done!\n");
+		// process.stdout.write("Done!\n");
 
 
 		process.stdout.write("Checking for left users...");

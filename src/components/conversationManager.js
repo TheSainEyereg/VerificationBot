@@ -168,7 +168,7 @@ async function sendQuestion(channel, verify) {
 						}),
 						new ButtonBuilder({
 							customId: "requestPassword",
-							label: "📝 Ввести пароль вручную",
+							label: "✏️ Ввести пароль вручную",
 							style: ButtonStyle.Secondary,
 						}),
 					],
@@ -188,7 +188,10 @@ async function startConversation(guild, user) {
 		if (member.roles.cache.has(roles.approved)) return;
 
 		const possibleUser = getUser(user.id);
-		if (possibleUser) return await member.roles.add(roles.approved);
+		if (possibleUser) {
+			await member.roles.add(roles.approved);
+			return;
+		}
 	} catch (e) {
 		return;
 	}
@@ -200,7 +203,8 @@ async function startConversation(guild, user) {
 			guild,
 			userVerify.channelId
 		);
-		if (channelExists) return;
+		if (channelExists)
+			return channelExists;
 	}
 
 	const category = await getCategory(guild);
@@ -252,7 +256,7 @@ async function startConversation(guild, user) {
 			{ content: user.toString(), thumbnail: settings.logoUrl }
 		);
 		await sendQuestion(channel, { question: 0, state: States.OnAnswers, questionOrder: questionOrder.join(",") });
-		return;
+		return channel;
 	}
 
 	updateVerify(user.id, "channelId", (userVerify.channelId = channel.id));
@@ -264,7 +268,7 @@ async function startConversation(guild, user) {
 			"Канал с вашей анкетой был восстановлен. Пожалуйста, дождитесь подтверждения от проверяющего.",
 			{ content: user.toString(), thumbnail: settings.logoUrl }
 		);
-		return;
+		return channel;
 	}
 
 	await regular(
@@ -278,6 +282,7 @@ async function startConversation(guild, user) {
 		{ content: user.toString(), thumbnail: settings.logoUrl }
 	);
 	await sendQuestion(channel, userVerify);
+	return channel;
 }
 
 /**
