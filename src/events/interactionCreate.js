@@ -80,7 +80,7 @@ module.exports = {
 					await member.roles.add(roles.approved);
 					await logInspection(interaction, verify);
 
-					endConversation(interaction.guild, member.user);
+					await endConversation(interaction.guild, member.user);
 				} catch (e) {
 					interaction.followUp({
 						ephemeral: true,
@@ -330,7 +330,7 @@ module.exports = {
 				
 				await logInspection(interaction, verify);
 
-				endConversation(interaction.guild, member.user);
+				await endConversation(interaction.guild, member.user);
 			}
 		}
 

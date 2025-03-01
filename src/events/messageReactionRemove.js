@@ -8,6 +8,6 @@ module.exports = {
 	async execute(reaction, user) {
 		const isUncheckedAll = await isUserReactedOther(user, reaction.message, {unchecked: true});
 	
-		if (isUncheckedAll) endConversation(reaction.message.guild, user);
+		if (isUncheckedAll) await endConversation(reaction.message.guild, user);
 	}
 }

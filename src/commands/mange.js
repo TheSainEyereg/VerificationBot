@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ChatInputCommandInteraction } = require("discord.js");
 const { RegExps } = require("../components/constants");
+const { endConversation } = require("../components/conversationManager");
 const { updatePassword } = require("../components/rconManager");
 const { getUser, updateUser } = require("../components/dataManager");
 const { hasAccess } = require("../components/checkManager");
@@ -123,6 +124,8 @@ module.exports = {
 					success(null, "Discord аккаунт изменен!", `Привязка игрока была перенесена на новый Discord аккаунт!`, {embed: true})
 				]
 			});
+
+			await endConversation(interaction.guild, newMember.user);
 		}
 	}
 }
