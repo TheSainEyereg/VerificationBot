@@ -21,8 +21,8 @@ module.exports = {
 			return;
 		}
 
-		const isReactedAll = await isUserReactedAll(member.user);
+		// const isReactedAll = await isUserReactedAll(member.user);
 	
-		if (isReactedAll) startConversation(member.guild, member.user);
+		// if (isReactedAll) startConversation(member.guild, member.user);
 	}
 }

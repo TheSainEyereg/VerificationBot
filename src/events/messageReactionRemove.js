@@ -6,8 +6,8 @@ const { endConversation } = require("../components/conversationManager");
 module.exports = {
 	event: Events.MessageReactionRemove,
 	async execute(reaction, user) {
-		const isUncheckedAll = await isUserReactedOther(user, reaction.message, {unchecked: true});
+		// const isUncheckedAll = await isUserReactedOther(user, reaction.message, {unchecked: true});
 	
-		if (isUncheckedAll) await endConversation(reaction.message.guild, user);
+		// if (isUncheckedAll) await endConversation(reaction.message.guild, user);
 	}
 }
