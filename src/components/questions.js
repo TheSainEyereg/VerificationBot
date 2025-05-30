@@ -86,14 +86,16 @@ const questions = [
 		type: "quiz",
 		message: "Cколько вам лет?",
 		answers: [
-			{
-				text: "8+",
-				style: ButtonStyle.Danger,
-			},
-			{
-				text: "13+",
-				style: ButtonStyle.Success,
-			},
+			// {
+			// 	text: "8+",
+			// 	style: ButtonStyle.Danger,
+			// },
+			// {
+			// 	text: "13+",
+			// 	style: ButtonStyle.Success,
+			// },
+			"8+",
+			"13+",
 			"18+"
 		],
 		answer: async (channel, member, answer) => {
@@ -122,10 +124,11 @@ const questions = [
 		answers: [
 			"♂️ Мужской",
 			"♀️ Женский",
-			{
-				text: "⚧️ Другой",
-				style: ButtonStyle.Secondary
-			}
+			// {
+			// 	text: "⚧️ Другой",
+			// 	style: ButtonStyle.Secondary
+			// }
+			"⚧️ Другой"
 		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) === 1) {
@@ -152,10 +155,11 @@ const questions = [
 		answers: [
 			"🇷🇺 Россия",
 			"🇺🇦 Украина",
-			{
-				text: "🇩🇪 Другая Страна",
-				style: ButtonStyle.Secondary
-			}
+			// {
+			// 	text: "🇩🇪 Другая Страна",
+			// 	style: ButtonStyle.Secondary
+			// }
+			"🇩🇪 Другая Страна"
 		],
 	},
 	{
@@ -166,10 +170,11 @@ const questions = [
 		type: "quiz",
 		message: "У вас установлен мод на голосовой чат PlasmoVoice?",
 		answers: [
-			{
-				text: "Да",
-				style: ButtonStyle.Success
-			},
+			// {
+			// 	text: "Да",
+			// 	style: ButtonStyle.Success
+			// },
+			"Да",
 			"Нет"
 		],
 		answer: async (channel, member, answer) => {
@@ -238,14 +243,16 @@ const questions = [
 		type: "quiz",
 		message: "Вы ознакомились с правилами сервера?",
 		answers: [
-			{
-				text: "Да",
-				style: ButtonStyle.Success
-			},
-			{
-				text: "Нет",
-				style: ButtonStyle.Danger
-			}
+			// {
+			// 	text: "Да",
+			// 	style: ButtonStyle.Success
+			// },
+			// {
+			// 	text: "Нет",
+			// 	style: ButtonStyle.Danger
+			// }
+			"Да",
+			"Нет"
 		],
 		answer: async (channel, member, answer) => {
 			if (Number(answer) !== 0) {

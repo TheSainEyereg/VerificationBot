@@ -31,8 +31,15 @@ async function sendRuleMessage(channel, type) {
 					new ButtonBuilder({
 						customId: "start",
 						label: "📝 Заполнить aнкету",
-						style: ButtonStyle.Primary
+						style: ButtonStyle.Success
 					}),
+					... rules[type].link ? [
+						new ButtonBuilder({
+							style: ButtonStyle.Link,
+							label: rules[type].link.text,
+							url: rules[type].link.url
+						})
+					] : []
 				],
 			}),
 		],

@@ -152,8 +152,8 @@ module.exports = {
 
 		process.stdout.write("Done!\n");
 
-		process.stdout.write("Cleaning up commands...");
-		await guild.commands.set([]);
+		// process.stdout.write("Cleaning up commands...");
+		// await guild.commands.set([]);
 
 		process.stdout.write("Parsing commands...");
 		client.commands = new Collection();

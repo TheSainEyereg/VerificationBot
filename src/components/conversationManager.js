@@ -249,12 +249,13 @@ async function startConversation(guild, user) {
 		}
 
 		createVerify(user.id, channel.id, Date.now() + 48 * 60 * 60e3, questionOrder.join(","));
-		await regular(
-			channel,
-			"Добро пожаловать!",
-			"Мы начнем с анкеты, где вам предстоит ответить на несколько вопросов. Анкета будет автоматически удалена через 48 часов! Давайте начнем!",
-			{ content: user.toString(), thumbnail: settings.logoUrl }
-		);
+		// await regular(
+		// 	channel,
+		// 	"Добро пожаловать!",
+		// 	"Мы начнем с анкеты, где вам предстоит ответить на несколько вопросов. Анкета будет автоматически удалена через 48 часов! Давайте начнем!",
+		// 	{ content: user.toString(), thumbnail: settings.logoUrl }
+		// );
+		await channel.send(user.toString());
 		await sendQuestion(channel, { question: 0, state: States.OnAnswers, questionOrder: questionOrder.join(",") });
 		return channel;
 	}
