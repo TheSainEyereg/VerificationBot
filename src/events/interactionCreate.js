@@ -64,15 +64,15 @@ module.exports = {
 
 					await interaction.deferUpdate();
 
-					try {
-						success(member, "Ваша заявка принята, добро пожаловать!");
-					} catch (e) {}
+					success(member, "Ваша заявка принята, добро пожаловать!")
+						.catch(() => null);
 		
 					if (!settings.serverless) {
 						const wlRes = await addToWhitelist(verify.nickname);
 						const regRes = await register(verify.nickname, verify.tempPassword);
 
-						if (!wlRes.status || !regRes.status) throw new Error(wlRes.message || regRes.message);
+						if (!wlRes.status || !regRes.status)
+							throw new Error(wlRes.message || regRes.message);
 					}
 					
 					createUser(userId, verify.nickname, member.joinedTimestamp, [], interaction.user.id, interaction.createdTimestamp, verify.answers);
@@ -82,7 +82,7 @@ module.exports = {
 
 					await endConversation(interaction.guild, member.user);
 				} catch (e) {
-					interaction.followUp({
+					interaction[interaction.deferred ? "followUp" : "reply"]({
 						ephemeral: true,
 						embeds: [
 							critical(null, "Ошибка взаимодействия!", `Сообщение: \`${e.message}\``, {embed: true})
@@ -130,24 +130,24 @@ module.exports = {
 					]
 				});
 
-				await interaction.deferUpdate();
-
-				const questionOrder = verify.questionOrder.split(",");
-				const question = questions[questionOrder[verify.question]];
-
-				if (question.type !== "quiz")
-					return;
-
-				const quizAnswer = interaction.customId.match(RegExps.Number)?.[0];
-				const answerOrder = verify.answerOrder?.split(",") ?? [0, 1, 2, 3, 4, 5];
-				const answer = answerOrder[quizAnswer];
-				
-				const { components } = interaction.message;
-				const component = components[0].components.find(c => c.customId === interaction.customId);
-
-				let result = !question.correct || question.correct.includes(Number(answer));
-
 				try {
+					await interaction.deferUpdate();
+
+					const questionOrder = verify.questionOrder.split(",");
+					const question = questions[questionOrder[verify.question]];
+
+					if (question.type !== "quiz")
+						return;
+
+					const quizAnswer = interaction.customId.match(RegExps.Number)?.[0];
+					const answerOrder = verify.answerOrder?.split(",") ?? [0, 1, 2, 3, 4, 5];
+					const answer = answerOrder[quizAnswer];
+					
+					const { components } = interaction.message;
+					const component = components[0].components.find(c => c.customId === interaction.customId);
+
+					let result = !question.correct || question.correct.includes(Number(answer));
+
 					if (question.answer)
 						result = await question.answer(interaction.channel, interaction.member, answer);
 					
